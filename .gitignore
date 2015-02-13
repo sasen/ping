@@ -9,3 +9,9 @@
 
 # RStudio files
 .Rproj.user/
+
+*~
+.DS_Store
+Data/
+201b_project.Rproj
+
