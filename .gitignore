@@ -9,3 +9,13 @@
 
 # RStudio files
 .Rproj.user/
+<<<<<<< Updated upstream
+
+*~
+.DS_Store
+Data/
+201b_project.Rproj
+
+=======
+.Rproj.user
+>>>>>>> Stashed changes

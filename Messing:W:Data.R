@@ -21,7 +21,7 @@ Data %>%
             )
 
 
-summary(lm(PHX_IMP_SNSEEK~+PHX_IMP_POSURG+rs2440390*TBX_attention_score,data=Data))
+summary(lm(PHX_IMP_SNSEEK~PHX_IMP_POSURG+rs2440390+TBX_attention_score,data=Data))
 summary(aov(PHX_IMP_NEGURG~PHX_IMP_TOTAL*rs2440390,data=Data))
 
 
