@@ -7,6 +7,10 @@ BehaveData <- read.csv("Data/PING_Behavior.csv",stringsAsFactors=FALSE)
 
 Data <- GeneticData %>%
   left_join(BehaveData,by=c("SubjID"))
+## rs2734838 
+## rs2440390 DRD2 c957t polymorphism??
+## rs1079727 
+
 
 table(GeneticData[,2:3])
 

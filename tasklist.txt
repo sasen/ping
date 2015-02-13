@@ -1,0 +1,10 @@
+find snp for darpp-32 
+
+rob learn git
+sasen learn dplyr & magrittr
+
+figure out beh attn measures [plausible dependent measures (proxies for subset who took phenx) ]
+-- check whether everyone has been genotyped and whether they've been flanker tested (look for fish task)
+-- subset on phenx takers & look for corr so we can use as proxy
+
+write out what we're trying to do for analysis in comments/pseudocode (see ses_beh_model.R)
