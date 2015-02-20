@@ -9,13 +9,19 @@
 
 # RStudio files
 .Rproj.user/
+<<<<<<< HEAD
 <<<<<<< Updated upstream
+=======
+>>>>>>> FETCH_HEAD
 
 *~
 .DS_Store
 Data/
 201b_project.Rproj
 
+<<<<<<< HEAD
 =======
 .Rproj.user
 >>>>>>> Stashed changes
+=======
+>>>>>>> FETCH_HEAD
