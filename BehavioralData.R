@@ -17,15 +17,38 @@ Data <- DAD2Data %>%
 Data %<>%
   filter( is.na(FDH_27_Ever_Diag_ADHD)==F,
           FDH_27_Ever_Diag_ADHD =="Yes"||FDH_27_Ever_Diag_ADHD =="No",
+          is.na(FDH_25_Self_Endorsed_Attn_Prob)==F,
+          FDH_25_Self_Endorsed_Attn_Prob =="Yes"||FDH_25_Self_Endorsed_Attn_Prob =="No",
+          is.na(FDH_26_Teacher_Said_Attn_Prob)==F,
+          FDH_26_Teacher_Said_Attn_Prob =="Yes"||FDH_26_Teacher_Said_Attn_Prob =="No",
+          is.na(FDH_28_Ever_Taken_Stim_Med)==F,
+          FDH_28_Ever_Taken_Stim_Med =="Yes"||FDH_28_Ever_Taken_Stim_Med =="No",
           is.na(FDH_3_Household_Income)==F
           )%>%
+  mutate(dADHD =ifelse(FDH_27_Ever_Diag_ADHD=="Yes",1,0),
+         selfADHD =ifelse(FDH_25_Self_Endorsed_Attn_Prob=="Yes",1,0),
+         teacherADHD =ifelse(FDH_26_Teacher_Said_Attn_Prob=="Yes",1,0),
+         stimADHD =ifelse(FDH_28_Ever_Taken_Stim_Med=="Yes",1,0),
+         SES = as.numeric(FDH_3_Household_Income))
+
+fish$attn = as.data.frame(Data$TBX_attention_score)
+fish$flank = Data$TBX_flanker_score
+fish = with(Data, TBX_attention_score,TBX_flanker_score)
+fish = na.omit(Data[,c(62:68,381,382)])
+
+PHX_IMP_TOTAL
+impul %<>%
+  filter( is.na(PHX_IMP_TOTAL)==F,
+          is.na(FDH_27_Ever_Diag_ADHD)==F,
+          FDH_27_Ever_Diag_ADHD =="Yes"||FDH_27_Ever_Diag_ADHD =="No",
+          is.na(FDH_3_Household_Income)==F          
+  )%>%
   mutate(dADHD =ifelse(FDH_27_Ever_Diag_ADHD=="Yes",1,0),
          SES = as.numeric(FDH_3_Household_Income))
 
 
-
 #linear regressions with various behavioral data
-glm0 <- glm(dADHD~Gender+Age_At_NPExam,data=Data,family=binomial)
+glm0 <- glm(dADHD~Gender+log(Age_At_NPExam),data=Data,family=binomial)
 glm1 <- glm(dADHD~Gender+log(Age_At_NPExam)+TBX_flanker_score+SES,data=Data,family=binomial)
 glm2 <- glm(dADHD~Gender+log(Age_At_NPExam)+TBX_flanker_score*SES,data=Data,family=binomial)
 glm3 <- glm(dADHD~Gender+log(Age_At_NPExam)*TBX_flanker_score*SES,data=Data,family=binomial)

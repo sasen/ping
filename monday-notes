@@ -1,0 +1,35 @@
+do their predictors of age of onset of substance use inform their 
+become less reliable for those with higher SES. 
+--> surprise: too little data on substances abuse.
+
+hazard function on age of first substance use  (nope)
+
+bernouilli on have they used anything. glm
+
+ignoring caffeine
+PHX_Tobacco_Status_1
+PHX_Alcohol_LifeUse_1
+PHX_Substance_LifeUse_5 (marijuana)
+
+PHX_Substance_Coc_1 (crack/cocaine)
+PHX_Substances_Stims_4  (pos number means not medical)
+
+PHX_Substance_Meth_1
+PHX_Substance_Sedtv_1
+table(phx$PHX_Substance_Tranq_1)
+table(phx$PHX_Substance_Painkiller_1)
+PHX_Substance_Halluc_1
+PHX_Substance_Inhalnt_1
+
+any 12-13yo heavy smokers?  NO
+
+subID, druggie_score, (pulll bizarro kids)
+1 = have they used anything.
+0 = they have answered everything and used none of it? (that'll be 14+ hrmmmmm)
+--make non-druggies (criteria? 14+ non-users?)
+--pull the three 9 & 10 yo kids
+--double check that i'm actually getting everyone of the druggies!!!
+--think about making alcohol more stringent
+--make smoking more stringent? (maybe not)
+—clarify the “medical purposes” ones
+--wait... we can see who has tried drugs and NOT gotten addicted 
