@@ -36,7 +36,7 @@ allp = allp[complete.cases(allp)]
 allp$phx_delay = allp$Age_At_PhenX_Completion - allp$Age
 
 Druggies <- BehaveData %>%
-  filter(  PHX_Alcohol_LifeUse_1==1 
+  filter( PHX_Alcohol_LifeUse_1==1 
          | PHX_Tobacco_Status_1==1
          | PHX_Substance_LifeUse_5==1  # marijuana
          | PHX_Substance_Coc_1==1    # crack or cocaine
@@ -48,8 +48,31 @@ Druggies <- BehaveData %>%
          | PHX_Substance_Halluc_1==1
          | PHX_Substance_Inhalnt_1==1
          | PHX_Substance_Heroin_1==1
-)
+) %>%
+  filter(Age_At_PhenX_Completion > 14 | Age > 14) # pull out non-tested
 
+Naives <- BehaveData %>%
+  filter( PHX_Alcohol_LifeUse_1==2 
+          | PHX_Tobacco_Status_1==2
+          | PHX_Substance_LifeUse_5==2  # marijuana
+          | PHX_Substance_Coc_1==2    # crack or cocaine
+          | PHX_Substance_Stims_1==2
+          | PHX_Substance_Meth_1==2
+          | PHX_Substance_Sedtv_1==2
+          | PHX_Substance_Tranq_1==2
+          | PHX_Substance_Painkiller_1==2
+          | PHX_Substance_Halluc_1==2
+          | PHX_Substance_Inhalnt_1==2
+          | PHX_Substance_Heroin_1==2
+  ) %>%
+  filter(Age_At_PhenX_Completion > 14 | Age > 14) # pull out non-tested
+
+Dunnos <- BehaveData %>%
+  filter( PHX_Tobacco_Status_1==99  ## don't know/won't state
+          | PHX_Substance_LifeUse_5==99)  # marijuana don't 
+
+          
+          
 DruggieID <- Druggies %>%
   select(  SubjID, 
            Alcohol = PHX_Alcohol_LifeUse_1,
@@ -65,6 +88,40 @@ DruggieID <- Druggies %>%
            Inhal = PHX_Substance_Inhalnt_1,
            Heroin = PHX_Substance_Heroin_1
            )
+
+NaiveID <- Naives %>%
+  select(  SubjID, 
+           Alcohol = PHX_Alcohol_LifeUse_1,
+           Tobacco = PHX_Tobacco_Status_1,
+           Marijuana = PHX_Substance_LifeUse_5,  # marijuana
+           Coca = PHX_Substance_Coc_1,
+           Stims = PHX_Substance_Stims_1,
+           Meth = PHX_Substance_Meth_1,
+           Sedtv = PHX_Substance_Sedtv_1,
+           Tranq = PHX_Substance_Tranq_1,
+           Paink = PHX_Substance_Painkiller_1,
+           Halluc = PHX_Substance_Halluc_1,
+           Inhal = PHX_Substance_Inhalnt_1,
+           Heroin = PHX_Substance_Heroin_1
+  )
+
+DunnoID <- Dunnos %>%
+  select(  SubjID, 
+           Alcohol = PHX_Alcohol_LifeUse_1,
+           Tobacco = PHX_Tobacco_Status_1,
+           Marijuana = PHX_Substance_LifeUse_5,  # marijuana
+           Coca = PHX_Substance_Coc_1,
+           Stims = PHX_Substance_Stims_1,
+           Meth = PHX_Substance_Meth_1,
+           Sedtv = PHX_Substance_Sedtv_1,
+           Tranq = PHX_Substance_Tranq_1,
+           Paink = PHX_Substance_Painkiller_1,
+           Halluc = PHX_Substance_Halluc_1,
+           Inhal = PHX_Substance_Inhalnt_1,
+           Heroin = PHX_Substance_Heroin_1
+  )
+
+
 
 filter(BehaveData, PHX_Substance_Sedtv_1==1) %>% select(SubjID)
 filter(BehaveData, PHX_Substance_Meth_1==1) %>% select(SubjID)
