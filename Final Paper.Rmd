@@ -243,10 +243,10 @@ Participants DNA was collected with a mouth swab and a whole genotype sequencing
 
 ### Family Income
 Parents of participants were asked to indicate their family's total income in the past year.This was reported in a 12 point scale, with categories ranging from "<$5,000" to ">$300,000". To turn this data into a numeric veriable, we took the mean value for each category (i.e. "$20,000 to 29,999" was coded as 35,000). The endpoints were coded as the least extreme value(i.e. "20,000"), so that this coding scheme is a conservative estiamte of income variance. The income distribution in our data set can be found in Figure 1.
-```{r,fig.cap="Figure 1"}
-IncomeHist <- data.frame(t(table(Data$FDH_3_Household_Income2)))
-
-qplot(data=IncomeHist, Freq,Var2,size=40) + ylab("Total Annual Family Income ($)")+xlab("Frequency")
+```{r,echo=FALSE}
+# IncomeHist <- data.frame(t(table(Data$FDH_3_Household_Income2)))
+# 
+# qplot(data=IncomeHist, Freq,Var2,size=40) + ylab("Total Annual Family Income ($)")+xlab("Frequency")
 
 ```
 
