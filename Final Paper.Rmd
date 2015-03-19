@@ -15,6 +15,8 @@ library(ggplot2)
 library(dplyr)
 library(magrittr)
 
+
+
 GeneticData <-read.csv("Data/DRD2andCOMTAlleles.csv",stringsAsFactors=FALSE)
 BehaveData <- read.csv("Data/PING_Behavior.csv",stringsAsFactors=FALSE)
 COMTData <-read.csv("Data/COMT_RS4680.csv",stringsAsFactors=FALSE)
@@ -49,13 +51,13 @@ confusedID = confused_drinkers$SubjID
 
 
 BehaveData %<>% 
-  mutate(got_drunk =ifelse(PHX_Alcohol_LifeAbuse_2=="",0,
+  dplyr::mutate(got_drunk =ifelse(PHX_Alcohol_LifeAbuse_2=="",0,
                            ifelse(substr(PHX_Alcohol_LifeAbuse_2,1,1)==0,0,1)))
 ## verify that nobody got put somewhere strange
 table(BehaveData$got_drunk,BehaveData$PHX_Alcohol_LifeAbuse_2)
 
 Druggies <- BehaveData %>%
-  filter(  got_drunk == 1             # we created            
+  dplyr::filter(  got_drunk == 1             # we created            
          | PHX_Tobacco_Status_1==1
          | PHX_Substance_LifeUse_5==1  # marijuana
          | PHX_Substance_Coc_1==1    # crack or cocaine
@@ -68,11 +70,11 @@ Druggies <- BehaveData %>%
          | PHX_Substance_Inhalnt_1==1
          | PHX_Substance_Heroin_1==1
 ) %>%
-  filter(Age_At_PhenX_Completion > 14 | Age > 14, # age protocol violation
+  dplyr::filter(Age_At_PhenX_Completion > 14 | Age > 14, # age protocol violation
          SubjID != confusedID) ## that one confused drunk
 
 Naives <- BehaveData %>%
-  filter( got_drunk == 0, 
+  dplyr::filter( got_drunk == 0, 
            PHX_Tobacco_Status_1==2,
            PHX_Substance_LifeUse_5==2,  # marijuana
            PHX_Substance_Coc_1==2,    # crack or cocaine
@@ -84,18 +86,18 @@ Naives <- BehaveData %>%
            PHX_Substance_Halluc_1==2,
            PHX_Substance_Inhalnt_1==2,
            PHX_Substance_Heroin_1==2  ) %>%
-  filter(Age_At_PhenX_Completion > 14 | Age > 14, # age protocol violation
+  dplyr::filter(Age_At_PhenX_Completion > 14 | Age > 14, # age protocol violation
          SubjID != confusedID) ## that one confused drunk
 
 ## this is just a quick check
 ## how many people said "Don't know / Decline to state" on any question?
 Dunnos <- BehaveData %>%
-  filter( PHX_Tobacco_Status_1==99  ## don't know/won't state
+  dplyr::filter( PHX_Tobacco_Status_1==99  ## don't know/won't state
           | PHX_Substance_LifeUse_5==99)  # marijuana don't 
 dim(Dunnos)[1]  ## 8 people, OK, whatever
           
 DruggieID <- Druggies %>%
-  select(  SubjID, 
+  dplyr::select(  SubjID, 
            Alcohol = got_drunk,
            Tobacco = PHX_Tobacco_Status_1,
            Marijuana = PHX_Substance_LifeUse_5,  # marijuana
@@ -110,7 +112,7 @@ DruggieID <- Druggies %>%
            Heroin = PHX_Substance_Heroin_1  )
 
 NaiveID <- Naives %>%
-  select(  SubjID, 
+  dplyr::select(  SubjID, 
            Alcohol = got_drunk,
            Tobacco = PHX_Tobacco_Status_1,
            Marijuana = PHX_Substance_LifeUse_5,  # marijuana
@@ -181,7 +183,7 @@ Data2 <- data.frame(rbind(Druggies,Naives))%>%
   left_join(COMTData,by=c("SubjID")) 
 
 Data <-Data2 %>%
-  select(GAF_africa,GAF_eastAsia,GAF_oceania,GAF_centralAsia,GAF_europe,GAF_amerind, FDH_3_Household_Income2,FDH_3_Household_IncomeLog,Gender,
+  dplyr::select(GAF_africa,GAF_eastAsia,GAF_oceania,GAF_centralAsia,GAF_europe,GAF_amerind, FDH_3_Household_Income2,FDH_3_Household_IncomeLog,Gender,
          rs4680,rs12364283,rs1800497,
          PHX_PSS_TOTAL,
          PHX_IMP_TOTAL,
@@ -194,11 +196,14 @@ table(Data$UseSubstance)
 
 
 
+names(Data) <-c("Africa_Ancestry", "EastAsia_Ancestry","Oceania_Ancestry","CentralAsia_Ancestry","Europe_Ancestry","American_Ancestry","Household_Income","Log10_Household_Income","Gender","rs4680","rs12364283","rs1800497","Stress", "Impulsivity","Age","UseSubstance")
+names(Data)
+
   
-  
 
-
-
+library(gmodels)
+library(MASS)
+options(xtable.comment = FALSE)
 ```
 
 #Introduction
@@ -209,13 +214,13 @@ However, what is distinct about substance abuse is that one must first use a psy
 
 However, the risky and behavior and possible poor judgement of those who try dangerous substances clearly does not exist in a vacuum. Our social and economic environment will influence both the availability of psychoactive substances, the messages we learn about the substances, and the magnitude of the consequences for using those substances. In adults there is a robust association between SES status and substance abuse (cite). However, there is signifcant debate about whether this is true for adolescents [@hanson2007socioeconomic,@goodman2002socioeconomic]. This suggest that, SES might not play a major role in likelihood of using a substance. Another possibility, however, is that SES might only have a protective influence for those who are particularly vulnerable. 
 
-In this study we use a cognitive model proposed by @frank2007genetic that would let us identify the risk factors that might make it more likely that we could identify the underlying mechanism in this modelk
+In this study we use a cognitive model proposed by @frank2007genetic that would let us identify the risk factors that might make it more likely that we could identify the underlying mechanisms in this model.
 
-##Role of Prefrontal Dopamine Density
+##Role of prefrontal dopamine density
 
 @frank2007genetic found a genetic triple dissocaition between SNPs that regulated different components of the dopaminergic system. One component appeared to regulate prefronal, apparently model-based, control over decision making behavior in a reinforcement learning task. This was a functional single nucleotide polymorphism (SNP) involved in the COMT gene. Those with the MET allele have higher prefronal dopamine levels and greater top down control over learning.  A later paper by the same group of researchers [@doll2011dopaminergic] found that this same allele predicted the degree to which participants were likely to be influenced by explicit statements. Together this suggests that those with the MET allele, compared to those with the VAL allele that is associated with lower prefrontal dopamine function, might be more likely to internalize the explicit messages they receive about the dangers of using substances. Other researcher have started to look at whether variation in COMT function predicts susceptibiltiy to addition  [@m2012role], but the question of whether or not it predicts a greater likelihood of adolecents and younger adults trying drugs has not been studied.
 
-##Role of Striatal D2 receptor density
+##Role of striatal D2 receptor density
 
 Another related SNP studied by these researchers was the C957T polymorphism of the DRD2 gene, that influenced participants ability to learn from negative reinforcement [@frank2007genetic]. DRD2 seems to have a selective effect on striatal, postsynaptic DA receptor density, and is implicated in learning from phasic dips in striatal dopamine. While the specific SNP used in that study, the C957T polymorphism is not available through PING, another SNP identified by @frank2009genetic, (rs12364283) influenced the same gene and appeared to have the same selective effecton on inhibitory learning. We hypothesized that those who are more likely to be able ot avoid negative outcomes may be more likely avoid use of dangergous psychoatctive substances.
 
@@ -228,19 +233,52 @@ Data used in the preparation of this article were obtained from the Pediatric Im
 
 Participants were recruited throuh PING, a nine site, cross-sectional study of roughly 1,400 children and adolencents from 3-20 years of age. Participants provided a saliva sample for whole genome sequencing, underwent three hours of neurocognitive testing and completed a one hour MRI session. Participants were subject to modest screening and those with a significant neurological disorder, or whose mother used alcohol or an illegal substance daily during pregnancy were screened.  Six of the nine sites participated in the additional testing, where children 14 and older were sent a web based interview based on PhenX questionniares that included questions about their tobacco, alcohol and illegal substance use. We do not have access to the geographcial location of the participants. 
 
-###Single Nucleotide Polymorphisms
-Participants DNA was collected with a mouth swab and a whole genotype sequencing was performed using the Illumina Human660W-Quad BeadChip. Included in the 494,082 SNPs passing the PING quality control filters were the Val158Met polymorphism that influences the COMT gene (rs4680), and an SNP influence post-synaptic D2 density in the striatum (Frank & Hutchingson, 2011). 
+##Single Nucleotide Polymorphisms
+Participants DNA was collected with a mouth swab and a whole genotype sequencing was performed using the Illumina Human660W-Quad BeadChip. Included in the 494,082 SNPs passing the PING quality control filters were the Val158Met polymorphism that influences the COMT gene (rs4680), and an SNP influencing post-synaptic D2 density (rs12364283) in the striatum (Frank & Hutchingson, 2011). For each participant, we assigened a scalar gene-dose value to them, definited in terms of the likely protective effect of their allels. For COMT, MET/MET =2, MET/VAL =0, VAL/VAL =-1, with a frequency of 
+.  Their relative proportions are 14:81:56 respectively. For rs12364283, AA= 1, AT = -1 with a relative proportions of 141:10 respectively. Other studies have found a population freqency of roughly 15% for the AT allelic variety [@frank2009genetic], so the minority varient is significantly underrepresented in our population (Binomial test(exact) p = .002). The distribution of the rs12364283 and rs4680 allels apears to be significant $\chi^2$=0.232, p=.896
 
-### Family Income
-Parents of participants were asked to indicate their family's total income in the past year.This was reported in a 12 point scale, with categories ranging from "<$5,000" to ">$300,000". To turn this data into a numeric veriable, we took the mean value for each category (i.e. "$20,000 to 29,999" was coded as 35,000). The endpoints were coded as the least extreme value(i.e. "20,000"), so that this coding scheme is a conservative estiamte of income variance. 
+```{r,results='asis',echo=FALSE}
 
+binom.test(10,151,p=.15)
 
-```{r,echo=FALSE}
-# IncomeHist <- data.frame(t(table(Data$FDH_3_Household_Income2)))
+Data$COMT <- ifelse(Data$rs4680=="AA",1,NA)
+Data$COMT <- ifelse(Data$rs4680=="AG",0,Data$COMT)
+Data$COMT <- ifelse(Data$rs4680=="GG",-1,Data$COMT)
+
+Data$DRD2 <-ifelse(Data$rs12364283=="AA",1,NA)
+Data$DRD2 <-ifelse(Data$rs12364283=="GA",0,Data$DRD2)
+# names(Data)
+
+# xtable(table(Data$rs4680))
+# # 
+# xtable(table(Data$rs12364283))
 # 
-# qplot(data=IncomeHist, Freq,Var2,size=40) + ylab("Total Annual Family Income ($)")+xlab("Frequency")
+# xtable(table(Data$rs12364283,Data$rs4680))
+
+#  chisq.test(table(Data$rs12364283,Data$rs4680))
 
 ```
+
+
+To make sure this SNPs were not related to ethnic background, we includeded a measure of genetic ancestry for each participant. This was estimated by @akshoomoff2014nih, comparing PING participants to a large reference population. Each particpant was assigned a perentage ancestry to the six clusters which emerged from the data: Europe, Africa, East Asia, Oceania, Central Asia, American Indian To preven perfect colinearity we dropped the American Indian percentage. A Likelihood Ratio Test revealed that an that genetic ancessestry was boarderline significant effect of genetic ancestry on allelic type for the rs6480 SNP, $\chi^2$(5) =10.5, p = .06.  Similarly, at Likelihood Ratio Test revealed that there was a signifcant effect of ancestry on the rs12364283 allelic frequency $\chi^2$(5) =13, p = .02. Therefore, we will include genetic ancestry in our dataset, to control directly for the effect of genetic ancestry. 
+
+```{r,echo=FALSE}
+
+#names(Data)
+g1 <- polr(as.factor(COMT)~Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,data=Data,method="logistic")
+g0 <-polr(as.factor(COMT)~1,data=Data,method="logistic")
+anova(g0,g1,test="Chisq")
+
+m1 <- (glm(DRD2~EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,data=Data,family="binomial"))
+m0 <- (glm(DRD2~1,data=Data,family="binomial"))
+
+anova(m0,m1,test="LRT")
+
+```
+
+## Family Income
+Parents of participants were asked to indicate their family's total income in the past year.This was reported in a 12 point scale, with categories ranging from "<$5,000" to ">$300,000". To turn this data into a numeric veriable, we took the mean value for each category (i.e. "$20,000 to 29,999" was coded as 35,000). The endpoints were coded as the least extreme value(i.e. "20,000"), so that this coding scheme is a conservative estiamte of income variance. 
+
 
 
 ##Significant Substance Abuse. 
@@ -257,18 +295,17 @@ Participants were classified as Naives if they stated that they had never tried 
 Two questions (cigarettes and marijuana) allowed the response "Don't know/Decline to state". Eight participants selected this response on either question, but four of them already qualified as Users due to other substance history. The remaining four participants, who had no exposure to other drugs, were excluded from analysis, because they could not be confidently labelled as Naive.
 
 
-###Possible Confounders
+###Age
 
-We tested whether age and gender influenced the likelihood of having used a psychoactive substance. There was an importantrelationship between the age and likelihood of using a substance, as you can see in Figure 1.
-
+Because this is a cross sectional study, we expect that age at the time of survey was likely to have a very large effect on the the likihood of using a substance. This is both because participants would have had more time to try a drug, and because earlier studies have shown older teens are more likely to have tried alcohol and other substances [@grant1997age]. To get a sense of this relationship, we plotted the proportion of users at each age who had used a psycho-active substance. Figure 1 shows this relationship.
 
 ```{r,echo=FALSE,fig.cap="Figure 1",fig.subcap="Error bars indicated 95% bionomial C.I."}
 
-Data$AgeRound <- floor(Data$Age_At_PhenX_Completion)
-
+Data$AgeRound <- floor(Data$Age)
+# names(Data)
 PlotD <- Data %>%
-  group_by(AgeRound)%>%
-  summarize(x =as.numeric(sum(UseSubstance==1)),
+  dplyr::group_by(AgeRound)%>%
+  dplyr::summarize(x =as.numeric(sum(UseSubstance==1)),
             n =as.numeric(length(UseSubstance==1)))
 
 
@@ -294,71 +331,136 @@ for(i in 1:9){
 qplot(AgeRound,p,data=PlotD) + geom_errorbar(aes(ymin=plow,ymax=phigh,width=0)) +ylab("Probability of Using Substance")+xlab("Age") +ggtitle("Effect of Age on the Probability of Using a Substance")
 ```
 
-```{r,echo=FALSE,results='hide'}
-m0 <- glm(UseSubstance~Age_At_PhenX_Completion*Gender,family='binomial',data=Data)
-#m1 <- glm(UseSubstance~sqrt(Age_At_PhenX_Completion),family='binomial',data=Data)
+
+##Substance Abuse
+
+We had three interacting hpothesis. The first is that the allelic variants that decreased COMT function and increased dopamine availablity in the prefrontal cortex would decrease the likelihood of using a substance. Second, that the allelic variants that increased DRD2 receptor density in the striatum would decrease the likelihood of using a substance. We put a greater focus on COMT as there was greater variablility in the genetic components. 
+
+
+###Ancestry
+
+We were concerned that ancestry could explain the underlying genetic interactions through their association with the SNPs, we first tested the probability that that Ancestry either predicted substance use, or that ancestry interacted with log income to influence substance use. For both tests, we found no evidence that ancestry mattered $\chi^2$(4)=5.024, p = .28 and $\chi^2$(9)=10.917, p = .28. Therefore, we dropped ancestry from our later models.
+
+```{r,results='hide',echo=FALSE}
+
+
+m0 <- glm(UseSubstance~Age,family='binomial',data=Data)
+
+m1 <- glm(UseSubstance~Age +Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,family='binomial',data=Data)
+
+m2 <- glm(UseSubstance~Age +Africa_Ancestry*Log10_Household_Income+
+            EastAsia_Ancestry*Log10_Household_Income+
+            EastAsia_Ancestry*Log10_Household_Income+
+            CentralAsia_Ancestry*Log10_Household_Income+
+            Europe_Ancestry*Log10_Household_Income,family='binomial',data=Data)
+
+anova(m0,m1,test="Chisq")
+anova(m0,m2,test="Chisq")
+
+
+```
+
+
+###COMT
+
+
+```{r,echo=FALSE,}
+# qplot(FDH_3_Household_IncomeLog,UseSubstance,geom=c("point","smooth"),method = "lm",data=Data,facets=.~rs4680)+ylab("Predicted probability of using a su")
+
+
+```
+
+We conducted a logistic regression, the beta weights and Wald-z values are reported blow. As is clear, nothing except age is signifcant at the $\alpha$=.5 level. There is no evidence that the COMT polymorphism is related to substance use. 
+
+
+```{r}
+# m0 <- glm(UseSubstance~Age +Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,family='binomial',data=Data)
 # 
+# m1 <-glm(UseSubstance~Age +Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+COMT,family='binomial',data=Data)
 # 
-xtable(anova(m0,test="Chisq"))
+# # names(Data)
+# m2<-glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+COMT+Log10_Household_Income,family='binomial',data=Data)
+# 
+# m3<-glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+COMT*Log10_Household_Income,family='binomial',data=Data)
+
+m0 <- glm(UseSubstance~Age,family='binomial',data=Data)
+
+m1 <-glm(UseSubstance~Age+COMT,family='binomial',data=Data)
+
+# names(Data)
+m2<-glm(UseSubstance~Age+COMT+Log10_Household_Income,family='binomial',data=Data)
+
+m3<-glm(UseSubstance~Age+COMT*Log10_Household_Income,family='binomial',data=Data)
+
+
+xtable(summary(m3))
 ```
 
-t
-```{r}
-
-
-```
-
-##Full model
-
-As stated, we wanted to test whether these genetic variants appeared to have any effect on likelihood of using a substance. Unfortunately, given our limited power, we did not find the 
+However, as the likelihood ratio test below makes clear, there is no main effect of the COMT polymorphism.
 
 ```{r}
-
-
-
-
-m0 <- glm(UseSubstance~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe +Gender+log(Age_At_PhenX_Completion),family='binomial',data=Data)
-
-m1 <- glm(UseSubstance~Age_At_PhenX_Completion+rs4680+rs12364283 +rs4680*FDH_3_Household_IncomeLog+ rs12364283*FDH_3_Household_IncomeLog,
-            family='binomial',data=Data)
-
-# Data$COMT <-ifelse(Data$rs4680=="AA",2,NA)
-# Data$COMT <-ifelse(Data$rs4680=="AG",1,Data$COMT)
-# Data$COMT <-ifelse(Data$rs4680=="GG",0,Data$COMT)
-
-# m2 <- glm(COMT~Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283 +FDH_3_Household_IncomeLog,
-#             family='binomial',data=Data)
-
-summary(m1)
-
-anova(m1,test="Chisq")
-
-qplot(FDH_3_Household_IncomeLog,jitter(UseSubstance),geom=c("point","smooth"),method="lm",data=Data,facets=.~rs12364283)
-
-
-# Data %>%
-#   group
-
+xtable(anova(m3,test="Chisq"))
 ```
 
 
-Creating the genetic markers. Borrowing from Frank et al (2006), we set the Val158Met polymorphism. in the 
+###DRD2
 
-Ok, plan: describe
+We conducted a similar regression with DRD2. As you can see, the Wald-Z statistic is not significant, but there is a trend p<.01 towards an interaction. Because only 10 subjects, we are cautious in interpreting significance. However, the Wald Z test for the interaction is marginally significant (Wald-z=-1.73,p=.0824), and the $\chi^2$ likelihood ratio test is significant $\chi^2$(1)=5.56, p=0.02. 
 
-SES factors:
+```{r,echo=FALSE,results='asis'}
+
+# m0 <- glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,family='binomial',data=Data)
+# 
+# m1 <-glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+DRD2,family='binomial',data=Data)
+# 
+# m2<-glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+DRD2+Log10_Household_Income,family='binomial',data=Data)
+# 
+# m3<-glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+DRD2*Log10_Household_Income,family='binomial',data=Data)
+
+m0 <- glm(UseSubstance~Age,family='binomial',data=Data)
+
+m1 <-glm(UseSubstance~Age+DRD2,family='binomial',data=Data)
+
+m2<-glm(UseSubstance~Age+DRD2+Log10_Household_Income,family='binomial',data=Data)
+
+m3<-glm(UseSubstance~Age+DRD2*Log10_Household_Income,family='binomial',data=Data)
+
+
+
+
+xtable(summary(m3))
+```
+
+```{r,echo=FALSE,results='asis'}
+xtable(anova(m3,test="Chisq"))
+
+
+```
+
+However, it appeared to be related to age, those over 21, were significantly more likely to have the allele that hurts negative reinforcement learning. So we conducted a boostrapping p
 ```{r}
 
-plotIncomeCOMT <-Data %>%
-  filter(is.na(rs4680)==F,
-         is.na(FDH_3_Household_IncomeLog)==F)%>%
-  group_by(FDH_3_Household_IncomeLog)%>%
-  dplyr::summarize(propCOMTMET=mean(rs4680=="AA"),
-                   propCOMTVAL=mean(rs4680=="GG"),
-                   propCOMTVALMET =mean(rs4680=="AG"))
+Data3 <- Data
+chisq.test(table(Data$Age>21,Data$DRD2),simulate.p.value = T)
 
-qplot(data=plotIncomeCOMT, FDH_3_Household_IncomeLog,propCOMTVAL,geom="line",color="Val") +geom_line(data=plotIncomeCOMT, aes(FDH_3_Household_IncomeLog,propCOMTMET,color="MET"))+geom_line(data=plotIncomeCOMT, aes(FDH_3_Household_IncomeLog,propCOMTVALMET,color="VAL/MET")) 
+sum(Data$Age>21)
+ 
+Data3 %<>%
+  dplyr::arrange(desc(Age))
 
+# RandSampl <- function(Data3){
+# Data3$NewDRD2<- c(sample(c(replicate(4,0),replicate(16,1)),20),sample(c(replicate(6,0),replicate(125,1)),131))
+# m5 <- glm(UseSubstance~Age+NewDRD2*Log10_Household_Income,family='binomial',data=Data3)
+# return(anova(m5,test="Chisq")[5,5])
+# }
+
+# Z <- replicate(10000,RandSampl(Data3))
+# write.csv(Z, "z.csv")
+Z<- read.csv("z.csv")
+qplot(Z$x)
+eZ <- ecdf(Z$x)
+
+actual <- anova(m3,test="Chisq")[5,5]
 
 
 ```
@@ -366,6 +468,43 @@ qplot(data=plotIncomeCOMT, FDH_3_Household_IncomeLog,propCOMTVAL,geom="line",col
 
 ```{r, echo=FALSE}
 qplot(Data$rs12364283)
+```
+
+
+\pagebreak
+## Both SNPs together
+
+We also tested a full model including both genes together and 
+
+
+```{r,echo=FALSE,results='asis'}
+m0 <- glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,family='binomial',data=Data)
+
+m1 <-glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+COMT+DRD2,family='binomial',data=Data)
+
+m2 <- glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+COMT+DRD2+Log10_Household_Income,family='binomial',data=Data)
+
+m3 <- glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+COMT+DRD2 +COMT*Log10_Household_Income+ DRD2*Log10_Household_Income,family='binomial',data=Data)
+# 
+# # Data$COMT <-ifelse(Data$rs4680=="AA",2,NA)
+# # Data$COMT <-ifelse(Data$rs4680=="AG",1,Data$COMT)
+# # Data$COMT <-ifelse(Data$rs4680=="GG",0,Data$COMT)
+# 
+# # m2 <- glm(COMT~Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283 +FDH_3_Household_IncomeLog,
+# #             family='binomial',data=Data)
+# 
+
+# xtable(summary(m3))
+xtable(anova(m3,test="Chisq"))
+
+```
+
+
+```{r,echo=FALSE}
+qplot(Log10_Household_Income,jitter(UseSubstance),geom=c("point","smooth"),method="lm",data=Data,facets=.~rs12364283)
+
+qplot(Log10_Household_Income,jitter(UseSubstance),geom=c("point","smooth"),method="lm",data=Data,facets=.~rs4680)
+
 ```
 
 
@@ -391,12 +530,22 @@ Data collection and sharing for this project was funded by the Pediatric Imaging
 
 Funding for PhenX and the PhenX Toolkit was provided by NHGRI 5U01HG004597 and 3U01HG004597-03S3.
 
+
+
+
+
 #Bibliography
 
-Akshoomoff, N., Newman, E., Thompson, W. K., McCabe, C., Bloss, C. S., Chang, L., ... & Jernigan, T. L. (2014). The NIH Toolbox Cognition Battery: Results from a large normative developmental sample (PING). Neuropsychology, 28(1), 1.
 
-Hamilton CM, Strader LC, Pratt JG, Maiese D, Hendershot T, Kwok RK,Hammond JA, Huggins W, Jackman D, Pan H, Nettles DS, Beaty TH, Farrer LA, Kraft P, Marazita ML, Ordovas JM, Pato CN, Spitz MR, Wagener D,Williams M, Junkins HA, Harlan WR, Ramos EM, Haines J: The PhenX toolkit:get the most from your measures. Am J Epidemiol 2011, 174:253–260
-[@frank2009genetic]
+
+
+
+
+
+
+
+
+
 
 #References
 
