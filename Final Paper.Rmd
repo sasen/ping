@@ -226,7 +226,7 @@ Data used in the preparation of this article were obtained from the Pediatric Im
 
 #Participants
 
-Participants were recruited throuh PING, a nine site, cross-sectional study of roughly 1,400 children and adolencents from 3-20 years of age. Participants provided a saliva sample for whole genome sequencing, underwent three hours of neurocognitive testing and completed a one hour MRI session. Participants were subject to modest screening and those with a significant neurological disorder, or whose mother used alcohol or an illegal substance daily during pregnancy were screened.  Six of the nine sites participated in the additional testing, where children 14 and older were sent a web based interview based on PhenX questionniares that included questions about their tobacco, alcohol and illegal substance use. We do not have access to the geographcial location of the participants. PhenX is a site of validated measures, sponsored by NIH, designed to facilite cross-study comparisons(Hamilton et. al 2006)
+Participants were recruited throuh PING, a nine site, cross-sectional study of roughly 1,400 children and adolencents from 3-20 years of age. Participants provided a saliva sample for whole genome sequencing, underwent three hours of neurocognitive testing and completed a one hour MRI session. Participants were subject to modest screening and those with a significant neurological disorder, or whose mother used alcohol or an illegal substance daily during pregnancy were screened.  Six of the nine sites participated in the additional testing, where children 14 and older were sent a web based interview based on PhenX questionniares that included questions about their tobacco, alcohol and illegal substance use. We do not have access to the geographcial location of the participants. 
 
 ###Single Nucleotide Polymorphisms
 Participants DNA was collected with a mouth swab and a whole genotype sequencing was performed using the Illumina Human660W-Quad BeadChip. Included in the 494,082 SNPs passing the PING quality control filters were the Val158Met polymorphism that influences the COMT gene (rs4680), and an SNP influence post-synaptic D2 density in the striatum (Frank & Hutchingson, 2011). 
@@ -244,9 +244,17 @@ Parents of participants were asked to indicate their family's total income in th
 
 
 ##Significant Substance Abuse. 
-Participants 14 and older at were provided with an online verions of the PhenX ... drug history questionnaire. This asked about their use of **SASEN Answer**
+The PhenX (consensus measures for Phenotypes and eXposures) Toolkit (http://www.phenxtoolkit.org) was used to assess substance abuse. These standardized measures  were sponsored by the National Human Genome Research Institute to integrate behavioral outcomes and environmental factors with genomic data, and to facilitate cross-study comparisons(Hamilton et. al 2006) and multi-site investigations. The PING study administered PhenX as a web-based self-report questionnaire--either in-lab or at home--that took 20-90 minutes to complete, depending on age and substance exposure history. While our analysis focuses on items relating to substance use and addiction, PhenX measures of affective and mental health outcomes (emotional state, depression, anxiety, impulsivity, stress, self-esteem, self-efficacy) and school environment were also collected. Combined with the family history, cognitive testing, and genomic testing of each participant, this provided a rich dataset to address how SES might influence genetic contributions to substance use behavior. 
+Our goal was to create a binary dependent variable that captured whether participants had engaged in high-risk substance abuse, so that our model would be predicting the probability of substance abuse. This is equivalent to creating two groups, Users and Naives. We reasoned that few participants would have developed full-blown addiction, especially in a pediatric sample, where parental vigilance, legal restrictions, and limited income reduces access to substances. Thus, classification as a User was based on ever having abused any substance included in the study.  We adopted this liberal criterion in the belief that becoming a User at a young age increases the risk of habit formation in adulthood, though our dataset cannot verify this.
+In contrast, classification as Naive was more stringent, which allowed stronger claims to be tested. Because Naives had never consumed any drugs or gotten drunk, they may exhibit more inhibitory control and harm avoidance. Or these individuals may have reduced response to rewarding stimuli. Our model tests these hypotheses as group-level differences in the dopaminergic mechanisms described above. 
+We recognize that some Naives, especially the younger ones, may choose to consume substances later in adolescence. Since genetic and household income influences are relatively stable, these mislabelled future-Users will weaken our analysis. This is a limitation of the PING design, since each participant completes PhenX at one timepoint in their lives. However, the inclusion of age as a predictor may mitigate this source of error.
 
 
+*Age*. Participants younger than age 14 were not asked about alcohol and illicit substances; therefore, we excluded younger participants from our analysis. The age range (at the time of PhenX completion) was [14.5, 22.67] years.
+
+*Substances*. Participants were classified as Users if they responded positively to ever having tried cigarettes, marijuana, cocaine, stimulants, meth-amphetamines, sedatives, tranquilizers, painkillers, hallucinogens, inhalants, or heroin--or if they had provided an age at which they first got drunk. (This was coded as a binary variable on ever having gotten drunk.) One participant was excluded for stating an age of first drunkenness that was younger than the age of initial alcohol use.
+Participants were classified as Naives if they stated that they had never tried any of those substances, and had never gotten drunk. This includes ten individuals who had consumed more than a sip or taste of alcohol. 
+Two questions (cigarettes and marijuana) allowed the response "Don't know/Decline to state". Eight participants selected this response on either question, but four of them already qualified as Users due to other substance history. The remaining four participants, who had no exposure to other drugs, were excluded from analysis, because they could not be confidently labelled as Naive.
 
 
 ###Possible Confounders
@@ -356,29 +364,32 @@ qplot(data=plotIncomeCOMT, FDH_3_Household_IncomeLog,propCOMTVAL,geom="line",col
 ```
 
 
-
-
-
-
-
-
-
-
-
-```
-
-
-You can also embed plots, for example:
-
 ```{r, echo=FALSE}
 qplot(Data$rs12364283)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+#Appendix: Substance Abuse Questions
+
+How old were you the first time you got drunk, that is, your speech was slurred or you were unsteady on your feet?
+Have you ever smoked part or all of a cigarette? (1=Yes, 2=No, 99=Don't Know/Decline to state)
+In your entire life, have you EVER tried marijuana (pot, weed, hash, bud, doobie, reefer, mary-jane, puff)? (1=Yes, 2=No, 99=Don't know/Decline to State)
+Have you EVER used cocaine or crack? (1=Yes, 2=No)
+Have you EVER used stimulants, for example, Preludin, Benzedrine, Methedrine, Ritalin, uppers, or speed? (1=Yes, 2=No)
+Have you EVER used meth-amphetamines (crystal meth, ice, batu, crank, tine, tweak, glass, junk)? (1=Yes, 2=No)
+Have you EVER used sedatives, for example, sleeping pills, barbiturates, Seconal, Quaaludes, or Chloral Hydrate? (1=Yes, 2=No)
+Have you EVER used tranquilizers or anti-anxiety drugs, for example, Valium, Librium, muscle relaxants, or Zanax (1=Yes, 2=No)
+Have you EVER used painkillers, for example, Codeine, Darvon, Percodan, OxyContin, Dilaudid, Demerol, Celebrex, or Vioxx? (1=Yes, 2=No)
+Have you EVER used hallucinogens, for example, Ecstasy/MDMA, GHB, Ketamine, LSD, mescaline, psilocybin, PCP, angel dust, or peyote? (1=Yes, 2=No)
+Have you EVER used inhalants or solvents, for example, amyl nitrite, nitrous oxide, glue, toluene or gasoline? (1=Yes, 2=No)
+Have you EVER used heroin? (1=Yes, 2=No)
+
 
 #Acknowledgements
 
 Data collection and sharing for this project was funded by the Pediatric Imaging, Neurocognition and Genetics Study (PING) (National Institutes of Health Grant RC2DA029475). PING is funded by the National Institute on Drug Abuse and the Eunice Kennedy Shriver National Institute of Child Health & Human Development. PING data are disseminated by the PING Coordinating Center at the Center for Human Development, University of California, San Diego.
+
+Funding for PhenX and the PhenX Toolkit was provided by NHGRI 5U01HG004597 and 3U01HG004597-03S3.
 
 #Bibliography
 
