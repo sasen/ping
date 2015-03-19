@@ -9,7 +9,7 @@ toc: true
 *Data used in preparation of this article were obtained from the Pediatric Imaging, Neurocognition and Genetics Study (PING) database (http://ping.chd.ucsd.edu). As such, the investigators within PING contributed to the design and implementation of PING and/or provided data but did not participate in analysis or writing of this report. A complete listing of PING investigators can be found at https://ping-dataportal.ucsd.edu/sharing/Authors10222012.pdf.
 
 
-```{r,echo=FALSE,results='hide',message=FALSE}
+```{r,echo=FALSE,results='hide',message=FALSE,warning=FALSE}
 library(xtable)
 library(ggplot2)
 library(dplyr)
@@ -213,8 +213,7 @@ In this study we use a cognitive model proposed by @frank2007genetic that would 
 
 ##Role of Prefrontal Dopamine Density
 
-@frank2007genetic found there had been had an interesting mechanism 
-
+@frank2007genetic found a genetic triple dissocaition between SNPs that regulated different components of the dopaminergic system. Specifically, he found that the SNP that increased prefrontal dopamine, the MET allel of the prefrontal system, predicted increased prefrontal control over decision making behavior. A later paper by the same group of researchers [@doll2011dopaminergic] found that this same allele predicted the degree to which participants were likely to be influenced by explicit statements. Together this suggests that ther 
 
 
 Go vs Nogo. 
@@ -236,13 +235,15 @@ COMT, they used the very common Val158Met polymorphism. COMT is an enzyme, and M
 
 Data used in the preparation of this article were obtained from the Pediatric Imaging, Neurocognition and Genetics (PING) Study database (http://ping.chd.ucsd.edu/). PING was launched in 2009 by the National Institute on Drug Abuse (NIDA) and the Eunice Kennedy Shriver National Institute Of Child Health & Human Development (NICHD) as a 2-year project of the American Recovery and Reinvestment Act. The primary goal of PING has been to create a data resource of highly standardized and carefully curated magnetic resonance imaging (MRI) data, comprehensive genotyping data, and developmental and neuropsychological assessments for a large cohort of developing children aged 3 to 20 years. The scientific aim of the project is, by openly sharing these data, to amplify the power and productivity of investigations of healthy and disordered development in children, and to increase understanding of the origins of variation in neurobehavioral phenotypes. For up-to-date information, see http://ping.chd.ucsd.edu/.
 
-Participants were recruited throuh PING, a nine site, cross-sectional study of roughly 14,000 children and adolencents from 3-20 years of age. Participants provided a saliva sample for whole genome sequencing, underwent three hours of neurocognitive testing and completed a one hour MRI session. Participants were subject to modest screening and those with a significant neurological disorder, or whose mother used alcohol or an illegal substance daily during pregnancy were screened.  Six of the nine sites participated in the additional testing, where children 14 and older were sent a web based interview based on PhenX questionniares that included questions about their tobacco, alcohol and illegal substance use. We do not have access to the geographcial location of the participants. PhenX is a site of validated measures, sponsored by NIH, designed to facilite cross-study comparisons(Hamilton et. al 2006)
+Participants were recruited throuh PING, a nine site, cross-sectional study of roughly 1,400 children and adolencents from 3-20 years of age. Participants provided a saliva sample for whole genome sequencing, underwent three hours of neurocognitive testing and completed a one hour MRI session. Participants were subject to modest screening and those with a significant neurological disorder, or whose mother used alcohol or an illegal substance daily during pregnancy were screened.  Six of the nine sites participated in the additional testing, where children 14 and older were sent a web based interview based on PhenX questionniares that included questions about their tobacco, alcohol and illegal substance use. We do not have access to the geographcial location of the participants. PhenX is a site of validated measures, sponsored by NIH, designed to facilite cross-study comparisons(Hamilton et. al 2006)
 
 ###Single Nucleotide Polymorphisms
 Participants DNA was collected with a mouth swab and a whole genotype sequencing was performed using the Illumina Human660W-Quad BeadChip. Included in the 494,082 SNPs passing the PING quality control filters were the Val158Met polymorphism that influences the COMT gene (rs4680), and an SNP influence post-synaptic D2 density in the striatum (Frank & Hutchingson, 2011). 
 
 ### Family Income
-Parents of participants were asked to indicate their family's total income in the past year.This was reported in a 12 point scale, with categories ranging from "<$5,000" to ">$300,000". To turn this data into a numeric veriable, we took the mean value for each category (i.e. "$20,000 to 29,999" was coded as 35,000). The endpoints were coded as the least extreme value(i.e. "20,000"), so that this coding scheme is a conservative estiamte of income variance. The income distribution in our data set can be found in Figure 1.
+Parents of participants were asked to indicate their family's total income in the past year.This was reported in a 12 point scale, with categories ranging from "<$5,000" to ">$300,000". To turn this data into a numeric veriable, we took the mean value for each category (i.e. "$20,000 to 29,999" was coded as 35,000). The endpoints were coded as the least extreme value(i.e. "20,000"), so that this coding scheme is a conservative estiamte of income variance. 
+
+
 ```{r,echo=FALSE}
 # IncomeHist <- data.frame(t(table(Data$FDH_3_Household_Income2)))
 # 
@@ -252,44 +253,88 @@ Parents of participants were asked to indicate their family's total income in th
 
 
 ##Significant Substance Abuse. 
-Participants 14 and older at were provided with an online verions of the PhenX ... drug history questionnaire. This asked about their use of XXX drugs, including.... 
-
-To maximizet the power of the test and to minimize the possibility of multiple comparisons, we looked at the underlying mechanisms that were found to be influence. 
+Participants 14 and older at were provided with an online verions of the PhenX ... drug history questionnaire. This asked about their use of **SASEN Answer**
 
 
 
 
 ###Possible Confounders
 
-To try to controll for the probability that the SNPs tested were not influenced by the racial backround of participants we included a measure of genetic ancestry, as calcuated by PING. This was estimated by Akshoomoff et al (2014), comparing PING participants to a large reference population. The six clusters include Europe, Africa, East Asia, Oceania, Central Asia.
+We tested whether age and gender influenced the likelihood of having used a psychoactive substance. There was an importantrelationship between the age and likelihood of using a substance, as you can see in Figure 1.
 
-We also included age and gender.
 
-```{r}
-# cor(na.omit(Data[,c("GAF_europe", "GAF_africa","GAF_eastAsia","GAF_oceania","GAF_centralAsia") ]))
+```{r,echo=FALSE,fig.cap="Figure 1",fig.subcap="Error bars indicated 95% bionomial C.I."}
+
+Data$AgeRound <- floor(Data$Age_At_PhenX_Completion)
+
+PlotD <- Data %>%
+  group_by(AgeRound)%>%
+  summarize(x =as.numeric(sum(UseSubstance==1)),
+            n =as.numeric(length(UseSubstance==1)))
+
+
+
+binomest <-function(x,n){
+  y= binom.test(x,n)
+  return(list(y$estimate[1],y$conf.int[1],y$conf.int[2]))
+}
+
+
+PlotD$p <- 0
+PlotD$plow <- 0
+PlotD$phigh <- 1
+for(i in 1:9){
+  x= as.numeric(PlotD[i,"x"])
+  n= as.numeric(PlotD[i,"n"])
+  PlotD[i,"p"] <- binomest(x,n)[1]
+  PlotD[i,"plow"] <- binomest(x,n)[2]
+  PlotD[i,"phigh"] <- binomest(x,n)[3]
+}
+
+
+qplot(AgeRound,p,data=PlotD) + geom_errorbar(aes(ymin=plow,ymax=phigh,width=0)) +ylab("Probability of Using Substance")+xlab("Age") +ggtitle("Effect of Age on the Probability of Using a Substance")
 ```
 
+```{r,echo=FALSE,results='hide'}
+m0 <- glm(UseSubstance~Age_At_PhenX_Completion*Gender,family='binomial',data=Data)
+#m1 <- glm(UseSubstance~sqrt(Age_At_PhenX_Completion),family='binomial',data=Data)
+# 
+# 
+xtable(anova(m0,test="Chisq"))
+```
+
+t
+```{r}
 
 
-## Validating Measures.
+```
 
-Previous studeis have found that the i
+##Full model
+
+As stated, we wanted to test whether these genetic variants appeared to have any effect on likelihood of using a substance. Unfortunately, given our limited power, we did not find the 
 
 ```{r}
 
 
 
-m0 <- glm(UseSubstance~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe +Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283,family='binomial',data=Data)
 
-m1 <- glm(UseSubstance~Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283 +FDH_3_Household_IncomeLog,
+m0 <- glm(UseSubstance~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe +Gender+log(Age_At_PhenX_Completion),family='binomial',data=Data)
+
+m1 <- glm(UseSubstance~Age_At_PhenX_Completion+rs4680+rs12364283 +rs4680*FDH_3_Household_IncomeLog+ rs12364283*FDH_3_Household_IncomeLog,
             family='binomial',data=Data)
 
-Data$COMT <-ifelse(Data$rs4680=="AA",2,NA)
-Data$COMT <-ifelse(Data$rs4680=="AG",1,Data$COMT)
-Data$COMT <-ifelse(Data$rs4680=="GG",0,Data$COMT)
+# Data$COMT <-ifelse(Data$rs4680=="AA",2,NA)
+# Data$COMT <-ifelse(Data$rs4680=="AG",1,Data$COMT)
+# Data$COMT <-ifelse(Data$rs4680=="GG",0,Data$COMT)
 
 # m2 <- glm(COMT~Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283 +FDH_3_Household_IncomeLog,
 #             family='binomial',data=Data)
+
+summary(m1)
+
+anova(m1,test="Chisq")
+
+qplot(FDH_3_Household_IncomeLog,jitter(UseSubstance),geom=c("point","smooth"),method="lm",data=Data,facets=.~rs12364283)
 
 
 # Data %>%
@@ -303,19 +348,6 @@ Creating the genetic markers. Borrowing from Frank et al (2006), we set the Val1
 Ok, plan: describe
 
 SES factors:
-
-Ethnicity: measured objectively. 
-Race: measured with score
-Education: Highest parental education
-SES: Income
-
-
-SES Household income <5,00 to > 300,000. using 2,500 as lower category, ad 3,500 has higher one. Brought to log10 for simplicity: 
-
-So first, make a model of SES.We've taking the midpoint of these categories,
-
-
-Tests: makes 
 ```{r}
 
 plotIncomeCOMT <-Data %>%
