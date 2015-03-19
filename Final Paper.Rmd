@@ -208,12 +208,12 @@ options(xtable.comment = FALSE)
 ```
 
 #Introduction
-The high apparent hereditability of substance abuse disorders [XXXX]has long suggested that vulnerability may be genetic. There have now been broad studies comparing adult substance abusers to healthy controls in the hopes of identifying the genetic components of one’s risk. By identifying the specific genes that predict those who are affected by substance abuse disorders, we might be able to identify the mechanism underying various components of individuals' susceptibility to the drug in question. 
+The high apparent hereditability of substance abuse disorders has long suggested that vulnerability may be genetic[@grove1990heritability]. There have now been broad studies comparing adult substance abusers to healthy controls in the hopes of identifying the genetic components of one’ risk. By identifying the specific genes that predict those who are affected by substance abuse disorders, we might be able to identify the mechanism underying various components of individuals' susceptibility to the drug in question. 
 
-However, what is distinct about substance abuse is that one must first use a psychoactive substance to become addicted to that substance. Those who struggle with substance abuse appear to have lower discount rates (cite), and they are more risk seeking(cite) than the general population. Part of the genetic risk factors that may influence one’s likelihood of acquiring a debilitating dependence on a psychoactive substance may be those that influence the likelihood of trying or using the drug, despite the apparent adverse consequences.
+However, what is distinct about substance abuse is that one must first use a psychoactive substance to become addicted to that substance. Those who struggle with substance abuse appear to have lower discount rates [@perry2008role], and they are more risk seeking [@perry2008role] than the general population. Part of the genetic risk factors that may influence one’s likelihood of acquiring a debilitating dependence on a psychoactive substance may be those that influence the likelihood of trying or using the drug, despite the apparent adverse consequences.
 
 
-However, the risky and behavior and possible poor judgement of those who try dangerous substances clearly does not exist in a vacuum. Our social and economic environment will influence both the availability of psychoactive substances, the messages we learn about the substances, and the magnitude of the consequences for using those substances. In adults there is a robust association between SES status and substance abuse (cite). However, there is signifcant debate about whether this is true for adolescents [@hanson2007socioeconomic,@goodman2002socioeconomic]. This suggest that, SES might not play a major role in likelihood of using a substance. Another possibility, however, is that SES might only have a protective influence for those who are particularly vulnerable. 
+However, the risky and behavior and possible poor judgement of those who try dangerous substances clearly does not exist in a vacuum. Our social and economic environment will influence both the availability of psychoactive substances, the messages we learn about the substances, and the magnitude of the consequences for using those substances. There is signifcant debate about whether this is true for adolescents [@hanson2007socioeconomic, @goodman2002socioeconomic]. This suggests that SES might not play a major role in likelihood of using a substance. Another possibility, however, is that SES might only have a protective influence for those who are particularly vulnerable. 
 
 In this study we use a cognitive model proposed by @frank2007genetic that would let us identify the risk factors that might make it more likely that we could identify the underlying mechanisms in this model.
 
@@ -232,13 +232,13 @@ Data used in the preparation of this article were obtained from the Pediatric Im
 
 ##Participants   
 
-Participants were recruited throuh PING, a nine site, cross-sectional study of roughly 1,400 children and adolencents from 3-20 years of age. Participants provided a saliva sample for whole genome sequencing, underwent three hours of neurocognitive testing and completed a one hour MRI session. Participants were subject to modest screening and those with a significant neurological disorder, or whose mother used alcohol or an illegal substance daily during pregnancy were screened.  Six of the nine sites participated in the additional testing, where children 14 and older were sent a web based interview of PhenX questionniares that included questions about their tobacco, alcohol and illegal substance use. We do not have access to the geographcial location of the participants. 
+Participants were recruited throuh PING, a nine site, cross-sectional study of roughly 1,400 children and adolencents from 3-20 years of age. Participants provided a saliva sample for whole genome sequencing, underwent three hours of neurocognitive testing and completed a one hour MRI session. Participants were subject to modest screening and those with a significant neurological disorder, or whose mother used alcohol or an illegal substance daily during pregnancy were screened.  Six of the nine sites participated in the additional testing, where children 14 and older were sent a web based interview of PhenX questionniares that included questions about their tobacco, alcohol and illegal substance use. We do not have access to the geographcial location of the participants. Participants  must be older than 14, have genetic data avaiable for the SNP's tested for in this dataset, and have either answered all the quesitons asked about the use of a substance. This left a total of 151 participants in our dataset. 
 
 
 
 ##Single Nucleotide Polymorphisms
 Participants DNA was collected with a mouth swab and a whole genotype sequencing was performed using the Illumina Human660W-Quad BeadChip. Included in the 494,082 SNPs passing the PING quality control filters were the Val158Met polymorphism that influences the COMT gene (rs4680), and an SNP influencing post-synaptic D2 density (rs12364283) in the striatum (Frank & Hutchingson, 2011). For each participant, we assigened a scalar gene-dose value to them, definited in terms of the likely protective effect of their allels. For COMT, MET/MET =2, MET/VAL =0, VAL/VAL =-1, with a frequency of 
-.  Their relative proportions are 14:81:56 respectively. For rs12364283, AA= 1, AT = -1 with a relative proportions of 141:10 respectively. Other studies have found a population freqency of roughly 15% for the AT allelic variety [@frank2009genetic], so the minority varient is significantly underrepresented in our population (Binomial test(exact) p = .002). The distribution of the rs12364283 and rs4680 allels apears to be significant $\chi^2$=0.232, p=.896.
+.  Their relative proportions are 14:81:56 respectively. For rs12364283, AA= 1, GA = 0 with a relative proportions of 141:10 respectively. Other studies have found a population freqency of roughly 15% for the GA allelic variety [@frank2009genetic], so the minority varient is significantly underrepresented in our population (Binomial test(exact) p = .002). The distribution of the rs12364283 and rs4680 allels appear to be independent $\chi^2$=0.232, p=.896.
 
 ```{r,results='hide',echo=FALSE}
 
@@ -264,22 +264,22 @@ Data$DRD2 <-ifelse(Data$rs12364283=="GA",0,Data$DRD2)
 
 To make sure this SNPs were not related to ethnic background, we includeded a measure of genetic ancestry for each participant. This was estimated by @akshoomoff2014nih, comparing PING participants to a large reference population. Each particpant was assigned a perentage ancestry to the six clusters which emerged from the data: Europe, Africa, East Asia, Oceania, Central Asia, American Indian To preven perfect colinearity we dropped the American Indian percentage. A Likelihood Ratio Test revealed that an that genetic ancessestry was boarderline significant effect of genetic ancestry on allelic type for the rs6480 SNP, $\chi^2$(5) =10.5, p = .06.  Similarly, at Likelihood Ratio Test revealed that there was a signifcant effect of ancestry on the rs12364283 allelic frequency $\chi^2$(5) =13, p = .02. Therefore, we will include genetic ancestry in our dataset, to control directly for the effect of genetic ancestry. 
 
-```{r,echo=FALSE,results='asis'}
+```{r,echo=FALSE,results='hold'}
 
 #names(Data)
-g1 <- polr(as.factor(COMT)~Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,data=Data,method="logistic")
-g0 <-polr(as.factor(COMT)~1,data=Data,method="logistic")
-anova(g0,g1,test="Chisq")
-
-m1 <- (glm(DRD2~EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,data=Data,family="binomial"))
-m0 <- (glm(DRD2~1,data=Data,family="binomial"))
-
-xtable(anova(m0,m1,test="LRT"))
+# g1 <- polr(as.factor(COMT)~Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,data=Data,method="logistic")
+# g0 <-polr(as.factor(COMT)~1,data=Data,method="logistic")
+# anova(g0,g1,test="Chisq")
+# 
+# m1 <- (glm(DRD2~EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,data=Data,family="binomial"))
+# m0 <- (glm(DRD2~1,data=Data,family="binomial"))
+# 
+# xtable(anova(m0,m1,test="LRT"))
 
 ```
 
 ## Family Income
-Parents of participants were asked to indicate their family's total income in the past year.This was reported in a 12 point scale, with categories ranging from "<$5,000" to ">$300,000". To turn this data into a numeric veriable, we took the mean value for each category (i.e. "$20,000 to 29,999" was coded as 35,000). The endpoints were coded as the least extreme value(i.e. "20,000"), so that this coding scheme is a conservative estiamte of income variance. 
+Parents of participants were asked to indicate their family's total income in the past year.This was reported in a 12 point scale, with categories ranging from "<$5,000" to ">$300,000". To turn this data into a numeric veriable, we took the mean value for each category (i.e. "$20,000 to 29,999" was coded as $35,000). The endpoints were coded as the least extreme value(i.e. "20,000"), so that this coding scheme is a conservative estiamte of income variance. We took the log base 10 value, as we felt it was more likely income would exert a proportional rather than linear effect on the likelihood of using a substance.  
 
 
 
@@ -299,7 +299,7 @@ Two questions (cigarettes and marijuana) allowed the response "Don't know/Declin
 
 #Results 
 
-##Effecs of Age
+##Effects of Age
 
 Because this is a cross sectional study, we expect that age at the time of survey was likely to have a very large effect on the the likihood of using a substance. This is both because participants would have had more time to try a drug, and because earlier studies have shown older teens are more likely to have tried alcohol and other substances [@grant1997age]. To get a sense of this relationship, we plotted the proportion of users at each age who had used a psycho-active substance. Figure 1 shows this relationship.
 ```{r,echo=FALSE,fig.cap="Figure 1",fig.subcap="Error bars indicated 95% bionomial C.I."}
@@ -332,6 +332,8 @@ for(i in 1:9){
 
 
 qplot(AgeRound,p,data=PlotD) + geom_errorbar(aes(ymin=plow,ymax=phigh,width=0)) +ylab("Probability of Using Substance")+xlab("Age") +ggtitle("Effect of Age on the Probability of Using a Substance")
+
+
 ```
 
 
@@ -363,7 +365,7 @@ anova(m0,m2,test="Chisq")
 
 ##Effect of Income and SNPs on Substance Use
 
-We had three interacting hpothesis. The first is that the allelic variants that decreased COMT function and increased dopamine availablity in the prefrontal cortex would decrease the likelihood of using a substance. Second, that the allelic variants that increased DRD2 receptor density in the striatum would decrease the likelihood of using a substance. We put a greater focus on COMT as there was greater variablility in the genetic components. 
+We had three interacting hpothesis. The first is that the allelic variants that decreased COMT function and increased dopamine availablity in the prefrontal cortex would decrease the likelihood of using a substance. Second, that the allelic variants that increased DRD2 receptor density in the striatum would decrease the likelihood of using a substance. We put a greater focus on COMT as there was greater variablility in the genetic components. Overall we found that 87 of the 51 participants had used a substance.  
 
 
 
@@ -476,32 +478,35 @@ actual <- anova(m3,test="Chisq")[5,5]
 ```
 
 
-However, it appears that this might be very sensitive to just a few points, which should make us quite anxious about interpretation. Below the the values plotted, with a linear estimate their to ease interpretation (note we have used logistic regressions to estimate the true values). As should be apparent, those with the GA version of the rs12364283  did not span the whole range of household income, and the interaction could be driven by an outlier, which is made larger in the graph below. A conservative way of correcting for this would be to limit the range similarly for those with the AA allele, and removing the outlier, then rerunning the anova. It appears the that in by doing both, the relationship replain significant, allthough the interpretation appears more limited. It appears that for those who are making over $30,00 a year, there is some evidence that a higher income increases the likelihood of those wih the GA allele using drugs and alcohol. 
+However, it appears that this might be very sensitive to just a few points, which should make us quite anxious about interpretation. Below the the values plotted, with a linear estimate their to ease interpretation (note we have used logistic regressions to estimate the true values). As should be apparent, those with the GA version of the rs12364283  did not span the whole range of household income (no participant had a reoported income below $30,000), and the interaction could be driven by an outlier, which is made larger in the graph below. A conservative way of correcting for this would be to limit the range similarly for those with the AA allele, and removing the outlier, then rerunning the anova. It appears the that in by doing both, the relationship replain significant, allthough the interpretation appears more limited. It appears that for those who are making over $30,000 a year, there is some evidence that a higher income increases the likelihood of those wih the GA allele using drugs and alcohol.  
+
+Note in these graphs, the binary response variable has been jittered for legibility.
 
 ```{r,echo=FALSE}
 
 Data$outlier <- 0.1
 Data[122,"outlier"] <- 1
-qplot(Household_Income,UseSubstance,geom=c("smooth"),method="glm",data=Data,facets=.~rs12364283)+geom_point(aes(Household_Income,jitter(UseSubstance),size=outlier))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+scale_x_continuous(labels = comma) 
+qplot(Household_Income,UseSubstance,geom=c("smooth"),method="glm",data=Data,facets=.~rs12364283)+geom_point(aes(Household_Income,jitter(UseSubstance),size=outlier))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+scale_x_continuous(labels = comma)+xlab("Household Income")+ ylab("Used a Substance (1 = Yes)" )+ ggtitle("Influence of rs12364283 Allels and Income on Substance Use")
+```
+  
+  
+    
+    
+     
 
-qplot(Household_Income,UseSubstance,geom=c("smooth"),method="glm",data=Data[Data$Log10_Household_Income>4.5,],facets=.~rs12364283)+geom_point(aes(Household_Income,jitter(UseSubstance)))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+scale_x_continuous(labels = comma) 
+```{r,echo=FALSE}
+qplot(Household_Income,UseSubstance,geom=c("smooth"),method="glm",data=Data[Data$Log10_Household_Income>4.5,],facets=.~rs12364283)+geom_point(aes(Household_Income,jitter(UseSubstance)))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+scale_x_continuous(labels = comma) +xlab("Household Income")+ ylab("Used a Substance (1 = Yes)" )+ ggtitle("Influence of rs12364283 Alleles \n and Income on Substance Use, \n Income>$30,000")
+```
 
 
 
 
-
-
+```{r,echo=FALSE,results='asis'}
 # qplot(Log10_Household_Income,UseSubstance,geom=c("smooth"),method="lm",data=Data[c(-122),],facets=.~rs12364283,color=AgeRound)+geom_point(aes(Log10_Household_Income,jitter(UseSubstance)))
 
 #data 136
 # m4<-glm(UseSubstance~Age+DRD2*Log10_Household_Income,family='binomial',data=Data[c(-122),])
 m5<-glm(UseSubstance~Age+DRD2*Log10_Household_Income,family='binomial',data=Data[Data$Log10_Household_Income>4.5,][-122,])
-
-s <- Data[Data$Log10_Household_Income>4.5,][-122,]
-
-```
-
-```{r,results='asis',echo=FALSE}
 xtable(anova(m5,test="Chisq"))
 
 
@@ -511,9 +516,9 @@ xtable(anova(m5,test="Chisq"))
 
 
 #Discussion
-It appears there is no strong evidence from this data that there is a significant inger
+It appears there is no strong evidence from this data that either SNP had a large influence on likelihood of adolecents and young adults using psycho-active substances. There sems to be some evidence that those with the GA variant of rs12364283 SNP, who are expected to have a  lower denisty of D2 striatal receptors, are more likely to use substances at a higher incomes. It is not clear why this is. Because of the low n, we cannot make strong claims about whether those at lower incomes use less substance than those with the AA variant, or whether they are more likely to use the substance at high incomes. If it is the former, it would suggest that for those in families with lower incomes, the ability to learn to avoid negative sitautions is critical in being able to avoid substance use.
 
-. This suggests that individual variation in D2 receptors does not significantly influence likelihood of using Tobacco, Alcohol or other illegal substances. This study is significantly limited by the ultimately very small sample of data that we had full data for, which limited our power. This dataset also had significantly fewer 
+However, the most likely claim is that no effect is significant. It is hard to draw strong conclcusions, because of the limited data ultimately available in this dataset. Together this might provide small evidence that differences in Prefrontal dopamine and striatal D2 receptor density do not explain individual differences in adolescents likelihood of trying an illegal substances, but larger datasets would be needed to truely rule out this effect. 
 
 
 
