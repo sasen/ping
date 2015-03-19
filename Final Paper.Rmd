@@ -10,6 +10,8 @@ library(xtable)
 library(ggplot2)
 library(dplyr)
 library(magrittr)
+library(gmodels)
+options(xtable.comment = FALSE)
 
 GeneticData <-read.csv("Data/DRD2andCOMTAlleles.csv",stringsAsFactors=FALSE)
 BehaveData <- read.csv("Data/PING_Behavior.csv",stringsAsFactors=FALSE)
@@ -205,35 +207,58 @@ However, what is distinct about substance abuse is that it one must first use a 
 
 However, the risky and behavior and possible poor judgement of those who try dangerous substances clearly does not exist in a vacuum. Our social and economic environment will influence both the availability of psychoactive substances, the messages we learn about the substances, and the magnitude of the consequences for using those substances. In adults there is a robust association between SES status and substance abuse (cite). However, there is signifcant debate about whether this is true for adolescents [@hanson2007socioeconomic,@goodman2002socioeconomic]. This suggest that, SES might not play a major role in likelihood of using a substance. Another possibility, however, is that SES might only have a protective influence for those who are particularly vulnerable. 
 
-In this study we use a cognitive model proposed by @frank2007genetic that would let us identify the risk factors that might make it more likely that we could identify the underlying mechanism in this modelk
+In this study we use a cognitive model proposed by @frank2007genetic that would let us identify the risk factors that might make it more likely that we could identify the underlying mechanisms in this model.
 
-##Role of Prefrontal Dopamine Density
+##Role of prefrontal dopamine density
 
 @frank2007genetic found a genetic triple dissocaition between SNPs that regulated different components of the dopaminergic system. One component appeared to regulate prefronal, apparently model-based, control over decision making behavior in a reinforcement learning task. This was a functional single nucleotide polymorphism (SNP) involved in the COMT gene. Those with the MET allele have higher prefronal dopamine levels and greater top down control over learning.  A later paper by the same group of researchers [@doll2011dopaminergic] found that this same allele predicted the degree to which participants were likely to be influenced by explicit statements. Together this suggests that those with the MET allele, compared to those with the VAL allele that is associated with lower prefrontal dopamine function, might be more likely to internalize the explicit messages they receive about the dangers of using substances. Other researcher have started to look at whether variation in COMT function predicts susceptibiltiy to addition  [@m2012role], but the question of whether or not it predicts a greater likelihood of adolecents and younger adults trying drugs has not been studied.
 
-##Role of Striatal D2 receptor density
+##Role of striatal D2 receptor density
 
 Another related SNP studied by these researchers was the C957T polymorphism of the DRD2 gene, that influenced participants ability to learn from negative reinforcement [@frank2007genetic]. DRD2 seems to have a selective effect on striatal, postsynaptic DA receptor density, and is implicated in learning from phasic dips in striatal dopamine. While the specific SNP used in that study, the C957T polymorphism is not available through PING, another SNP identified by @frank2009genetic, (rs12364283) influenced the same gene and appeared to have the same selective effecton on inhibitory learning. We hypothesized that those who are more likely to be able ot avoid negative outcomes may be more likely avoid use of dangergous psychoatctive substances.
 
 
 #Methods
 
-#Participants
+##Participants
 Participants were recruited throuh PING, a nine site, cross-sectional study of roughly 1,400 children and adolencents from 3-20 years of age. Participants provided a saliva sample for whole genome sequencing, underwent three hours of neurocognitive testing and completed a one hour MRI session. Participants were subject to modest screening and those with a significant neurological disorder, or whose mother used alcohol or an illegal substance daily during pregnancy were screened.  Six of the nine sites participated in the additional testing, where children 14 and older were sent a web based interview based on PhenX questionniares that included questions about their tobacco, alcohol and illegal substance use. We do not have access to the geographcial location of the participants. PhenX is a site of validated measures, sponsored by NIH, designed to facilite cross-study comparisons(Hamilton et. al 2006)
 
-###Single Nucleotide Polymorphisms
-Participants DNA was collected with a mouth swab and a whole genotype sequencing was performed using the Illumina Human660W-Quad BeadChip. Included in the 494,082 SNPs passing the PING quality control filters were the Val158Met polymorphism that influences the COMT gene (rs4680), and an SNP influence post-synaptic D2 density in the striatum (Frank & Hutchingson, 2011). 
+##Single Nucleotide Polymorphisms
+Participants DNA was collected with a mouth swab and a whole genotype sequencing was performed using the Illumina Human660W-Quad BeadChip. Included in the 494,082 SNPs passing the PING quality control filters were the Val158Met polymorphism that influences the COMT gene (rs4680), and an SNP influencing post-synaptic D2 density (rs12364283) in the striatum (Frank & Hutchingson, 2011). For each participant, we assigened a scalar gene-dose value to them, definited in terms of the likely protective effect of their allels. For COMT, MET/MET =2, MET/VAL =0, VAL/VAL =-1, with a frequency of 
+.  Their relative proportions are 14:81:56 respectively. For rs12364283, AA= 1, AT = -1 with a relative proportions of 141:10 respectively. Other studies have found a population freqency of roughly 15% for the AT allelic variety [@frank2009genetic], so the minority varient is significantly underrepresented in our population (Binomial test(exact) p = .002). The distribution of the rs12364283 and rs4680 allels apears to be significant $\chi^2$=0.232, p=.896
 
-### Family Income
-Parents of participants were asked to indicate their family's total income in the past year.This was reported in a 12 point scale, with categories ranging from "<$5,000" to ">$300,000". To turn this data into a numeric veriable, we took the mean value for each category (i.e. "$20,000 to 29,999" was coded as 35,000). The endpoints were coded as the least extreme value(i.e. "20,000"), so that this coding scheme is a conservative estiamte of income variance. 
+```{r,results='asis',echo=FALSE}
 
+binom.test(10,151,p=.15)
 
-```{r,echo=FALSE}
-# IncomeHist <- data.frame(t(table(Data$FDH_3_Household_Income2)))
+Data$COMT <- ifelse(Data$rs4680=="AA",1,NA)
+Data$COMT <- ifelse(Data$rs4680=="AG",0,Data$COMT)
+Data$COMT <- ifelse(Data$rs4680=="GG",-1,Data$COMT)
+
+Data$DRD2 <-ifelse(Data$rs12364283=="AA",1,NA)
+Data$DRD2 <-ifelse(Data$rs12364283=="GA",-1,Data$DRD2)
+
+# xtable(table(Data$rs4680))
+# # 
+# xtable(table(Data$rs12364283))
 # 
-# qplot(data=IncomeHist, Freq,Var2,size=40) + ylab("Total Annual Family Income ($)")+xlab("Frequency")
+# xtable(table(Data$rs12364283,Data$rs4680))
+
+#  chisq.test(table(Data$rs12364283,Data$rs4680))
 
 ```
+
+
+To make sure this SNPs were not related to ethnic background, we includeded a measure of genetic ancestry for each participant. This was estimated by @akshoomoff2014nih, comparing PING participants to a large reference population. Each particpant was assigned a perentage ancestry to the six clusters which emerged from the data: Europe, Africa, East Asia, Oceania, Central Asia.
+
+```{r}
+
+
+```
+
+## Family Income
+Parents of participants were asked to indicate their family's total income in the past year.This was reported in a 12 point scale, with categories ranging from "<$5,000" to ">$300,000". To turn this data into a numeric veriable, we took the mean value for each category (i.e. "$20,000 to 29,999" was coded as 35,000). The endpoints were coded as the least extreme value(i.e. "20,000"), so that this coding scheme is a conservative estiamte of income variance. 
+
 
 
 ##Significant Substance Abuse. 
@@ -244,8 +269,7 @@ Participants 14 and older at were provided with an online verions of the PhenX .
 
 ###Possible Confounders
 
-We tested whether age and gender influenced the likelihood of having used a psychoactive substance. There was an importantrelationship between the age and likelihood of using a substance, as you can see in Figure 1.
-
+Because this is a cross sectional study, we expect that age at the time of survey was likely to have a very large effect on the the likihood of using a substance. This is both because participants would have had more time to try a drug, and because earlier studies have shown older teens are more likely to have tried alcohol and other substances [@grant1997age]. To get a sense of this relationship, we plotted the proportion of users at each age who had used a psycho-active substance. Figure 1 shows this relationship.
 
 ```{r,echo=FALSE,fig.cap="Figure 1",fig.subcap="Error bars indicated 95% bionomial C.I."}
 
@@ -279,12 +303,11 @@ for(i in 1:9){
 qplot(AgeRound,p,data=PlotD) + geom_errorbar(aes(ymin=plow,ymax=phigh,width=0)) +ylab("Probability of Using Substance")+xlab("Age") +ggtitle("Effect of Age on the Probability of Using a Substance")
 ```
 
+We also tested whether percent geneti ancestry influenced the results. 
 ```{r,echo=FALSE,results='hide'}
-m0 <- glm(UseSubstance~Age_At_PhenX_Completion*Gender,family='binomial',data=Data)
-#m1 <- glm(UseSubstance~sqrt(Age_At_PhenX_Completion),family='binomial',data=Data)
-# 
-# 
-xtable(anova(m0,test="Chisq"))
+
+
+
 ```
 
 t
@@ -370,10 +393,7 @@ qplot(Data$rs12364283)
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 #Bibliography
 
-Akshoomoff, N., Newman, E., Thompson, W. K., McCabe, C., Bloss, C. S., Chang, L., ... & Jernigan, T. L. (2014). The NIH Toolbox Cognition Battery: Results from a large normative developmental sample (PING). Neuropsychology, 28(1), 1.
 
-Hamilton CM, Strader LC, Pratt JG, Maiese D, Hendershot T, Kwok RK,Hammond JA, Huggins W, Jackman D, Pan H, Nettles DS, Beaty TH, Farrer LA, Kraft P, Marazita ML, Ordovas JM, Pato CN, Spitz MR, Wagener D,Williams M, Junkins HA, Harlan WR, Ramos EM, Haines J: The PhenX toolkit:get the most from your measures. Am J Epidemiol 2011, 174:253–260
-[@frank2009genetic]
 
 #References
 
