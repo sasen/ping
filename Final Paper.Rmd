@@ -47,13 +47,13 @@ confusedID = confused_drinkers$SubjID
 
 
 BehaveData %<>% 
-  mutate(got_drunk =ifelse(PHX_Alcohol_LifeAbuse_2=="",0,
+  dplyr::mutate(got_drunk =ifelse(PHX_Alcohol_LifeAbuse_2=="",0,
                            ifelse(substr(PHX_Alcohol_LifeAbuse_2,1,1)==0,0,1)))
 ## verify that nobody got put somewhere strange
 table(BehaveData$got_drunk,BehaveData$PHX_Alcohol_LifeAbuse_2)
 
 Druggies <- BehaveData %>%
-  filter(  got_drunk == 1             # we created            
+  dplyr::filter(  got_drunk == 1             # we created            
          | PHX_Tobacco_Status_1==1
          | PHX_Substance_LifeUse_5==1  # marijuana
          | PHX_Substance_Coc_1==1    # crack or cocaine
@@ -66,11 +66,11 @@ Druggies <- BehaveData %>%
          | PHX_Substance_Inhalnt_1==1
          | PHX_Substance_Heroin_1==1
 ) %>%
-  filter(Age_At_PhenX_Completion > 14 | Age > 14, # age protocol violation
+  dplyr::filter(Age_At_PhenX_Completion > 14 | Age > 14, # age protocol violation
          SubjID != confusedID) ## that one confused drunk
 
 Naives <- BehaveData %>%
-  filter( got_drunk == 0, 
+  dplyr::filter( got_drunk == 0, 
            PHX_Tobacco_Status_1==2,
            PHX_Substance_LifeUse_5==2,  # marijuana
            PHX_Substance_Coc_1==2,    # crack or cocaine
@@ -82,18 +82,18 @@ Naives <- BehaveData %>%
            PHX_Substance_Halluc_1==2,
            PHX_Substance_Inhalnt_1==2,
            PHX_Substance_Heroin_1==2  ) %>%
-  filter(Age_At_PhenX_Completion > 14 | Age > 14, # age protocol violation
+  dplyr::filter(Age_At_PhenX_Completion > 14 | Age > 14, # age protocol violation
          SubjID != confusedID) ## that one confused drunk
 
 ## this is just a quick check
 ## how many people said "Don't know / Decline to state" on any question?
 Dunnos <- BehaveData %>%
-  filter( PHX_Tobacco_Status_1==99  ## don't know/won't state
+  dplyr::filter( PHX_Tobacco_Status_1==99  ## don't know/won't state
           | PHX_Substance_LifeUse_5==99)  # marijuana don't 
 dim(Dunnos)[1]  ## 8 people, OK, whatever
           
 DruggieID <- Druggies %>%
-  select(  SubjID, 
+  dplyr::select(  SubjID, 
            Alcohol = got_drunk,
            Tobacco = PHX_Tobacco_Status_1,
            Marijuana = PHX_Substance_LifeUse_5,  # marijuana
@@ -108,7 +108,7 @@ DruggieID <- Druggies %>%
            Heroin = PHX_Substance_Heroin_1  )
 
 NaiveID <- Naives %>%
-  select(  SubjID, 
+  dplyr::select(  SubjID, 
            Alcohol = got_drunk,
            Tobacco = PHX_Tobacco_Status_1,
            Marijuana = PHX_Substance_LifeUse_5,  # marijuana
@@ -179,7 +179,7 @@ Data2 <- data.frame(rbind(Druggies,Naives))%>%
   left_join(COMTData,by=c("SubjID")) 
 
 Data <-Data2 %>%
-  select(GAF_africa,GAF_eastAsia,GAF_oceania,GAF_centralAsia,GAF_europe,GAF_amerind, FDH_3_Household_Income2,FDH_3_Household_IncomeLog,Gender,
+  dplyr::select(GAF_africa,GAF_eastAsia,GAF_oceania,GAF_centralAsia,GAF_europe,GAF_amerind, FDH_3_Household_Income2,FDH_3_Household_IncomeLog,Gender,
          rs4680,rs12364283,rs1800497,
          PHX_PSS_TOTAL,
          PHX_IMP_TOTAL,
@@ -192,7 +192,9 @@ table(Data$UseSubstance)
 
 
 
-# names(Data) <-c("Africa_Ancestry", "EastAsia_Ancestry", "Oceania_Ancestry","CentralAsia_Ancestry","Europe_Ancestry","American_Ancestry","Household_Income", "Log10_Household_Income","")
+names(Data) <-c("Africa_Ancestry", "EastAsia_Ancestry","Oceania_Ancestry","CentralAsia_Ancestry","Europe_Ancestry","American_Ancestry","Household_Income","Log10_Household_Income","Gender","rs4680","rs12364283","rs1800497","Stress", "Impulsivity","Age","UseSubstance")
+names(Data)
+
   
 
 library(gmodels)
@@ -238,6 +240,7 @@ Data$COMT <- ifelse(Data$rs4680=="GG",-1,Data$COMT)
 
 Data$DRD2 <-ifelse(Data$rs12364283=="AA",1,NA)
 Data$DRD2 <-ifelse(Data$rs12364283=="GA",0,Data$DRD2)
+# names(Data)
 
 # xtable(table(Data$rs4680))
 # # 
@@ -254,11 +257,12 @@ To make sure this SNPs were not related to ethnic background, we includeded a me
 
 ```{r,echo=FALSE}
 
-g1<- polr(as.factor(COMT)~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe,data=Data,method="logistic")
+#names(Data)
+g1 <- polr(as.factor(COMT)~Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,data=Data,method="logistic")
 g0 <-polr(as.factor(COMT)~1,data=Data,method="logistic")
 anova(g0,g1,test="Chisq")
 
-m1 <- (glm(DRD2~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe,data=Data,family="binomial"))
+m1 <- (glm(DRD2~EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,data=Data,family="binomial"))
 m0 <- (glm(DRD2~1,data=Data,family="binomial"))
 
 anova(m0,m1,test="LRT")
@@ -282,11 +286,11 @@ Because this is a cross sectional study, we expect that age at the time of surve
 
 ```{r,echo=FALSE,fig.cap="Figure 1",fig.subcap="Error bars indicated 95% bionomial C.I."}
 
-Data$AgeRound <- floor(Data$Age_At_PhenX_Completion)
-
+Data$AgeRound <- floor(Data$Age)
+# names(Data)
 PlotD <- Data %>%
-  group_by(AgeRound)%>%
-  summarize(x =as.numeric(sum(UseSubstance==1)),
+  dplyr::group_by(AgeRound)%>%
+  dplyr::summarize(x =as.numeric(sum(UseSubstance==1)),
             n =as.numeric(length(UseSubstance==1)))
 
 
@@ -313,55 +317,98 @@ qplot(AgeRound,p,data=PlotD) + geom_errorbar(aes(ymin=plow,ymax=phigh,width=0)) 
 ```
 
 
-##Full model
+##Substance Abuse
 
 We had three interacting hpothesis. The first is that the allelic variants that decreased COMT function and increased dopamine availablity in the prefrontal cortex would decrease the likelihood of using a substance. Second, that the allelic variants that increased DRD2 receptor density in the striatum would decrease the likelihood of using a substance. We put a greater focus on COMT as there was greater variablility in the genetic components. 
 
+
+###Ancestry
+
+We were concerned that ancestry could explain the underlying genetic interactions through their association with the SNPs, we first tested the probability that that Ancestry either predicted substance use, or that ancestry interacted with log income to influence substance use. For both tests, we found no evidence that ancestry mattered $\chi^2$(4)=5.024, p = .28 and $\chi^2$(9)=10.917, p = .28. Therefore, we dropped ancestry from our later models.
+
+```{r,results='hide',echo=FALSE}
+
+
+m0 <- glm(UseSubstance~Age,family='binomial',data=Data)
+
+m1 <- glm(UseSubstance~Age +Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,family='binomial',data=Data)
+
+m2 <- glm(UseSubstance~Age +Africa_Ancestry*Log10_Household_Income+
+            EastAsia_Ancestry*Log10_Household_Income+
+            EastAsia_Ancestry*Log10_Household_Income+
+            CentralAsia_Ancestry*Log10_Household_Income+
+            Europe_Ancestry*Log10_Household_Income,family='binomial',data=Data)
+
+anova(m0,m1,test="Chisq")
+anova(m0,m2,test="Chisq")
+
+
+```
+
+
 ###COMT
 
-In Figure 2, we see the 
+
 ```{r,echo=FALSE,}
 # qplot(FDH_3_Household_IncomeLog,UseSubstance,geom=c("point","smooth"),method = "lm",data=Data,facets=.~rs4680)+ylab("Predicted probability of using a su")
 
 
 ```
 
-We conducted a logistic regression, the beta weights and Wald-z values are reported blow. As is clear, nothing except age is signifcant at the $\alpha$=.5 level. There  appears that there there is a trend for a negative effect of COMT on likelihood of using a substance,and a positive interaction with income.
+We conducted a logistic regression, the beta weights and Wald-z values are reported blow. As is clear, nothing except age is signifcant at the $\alpha$=.5 level. There is no evidence that the COMT polymorphism is related to substance use. 
 
-```{r,results='asis',echo=FALSE}
 
-m0 <- glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe,family='binomial',data=Data)
+```{r}
+# m0 <- glm(UseSubstance~Age +Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,family='binomial',data=Data)
+# 
+# m1 <-glm(UseSubstance~Age +Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+COMT,family='binomial',data=Data)
+# 
+# # names(Data)
+# m2<-glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+COMT+Log10_Household_Income,family='binomial',data=Data)
+# 
+# m3<-glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+COMT*Log10_Household_Income,family='binomial',data=Data)
 
-m1 <-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+COMT,family='binomial',data=Data)
+m0 <- glm(UseSubstance~Age,family='binomial',data=Data)
 
-m2<-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+COMT+FDH_3_Household_IncomeLog,family='binomial',data=Data)
+m1 <-glm(UseSubstance~Age+COMT,family='binomial',data=Data)
 
-m3<-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+COMT*FDH_3_Household_IncomeLog,family='binomial',data=Data)
+# names(Data)
+m2<-glm(UseSubstance~Age+COMT+Log10_Household_Income,family='binomial',data=Data)
+
+m3<-glm(UseSubstance~Age+COMT*Log10_Household_Income,family='binomial',data=Data)
 
 
 xtable(summary(m3))
 ```
 
-However, as the likelihood ratio test below makes clear, there is no main effect of the COMT polymorphism, and only trending evidence for the likelihod of an interaction. Therefore there may be suggestive evidence of an interaction, but any results here should be treated with caution. 
+However, as the likelihood ratio test below makes clear, there is no main effect of the COMT polymorphism.
 
 ```{r}
 xtable(anova(m3,test="Chisq"))
 ```
 
+
 ###DRD2
 
-We conducted a similar regression with DRD2. As you can see, the Wald-Z statistic is not significant, and should be interpreted with caution. 
+We conducted a similar regression with DRD2. As you can see, the Wald-Z statistic is not significant, but there is a trend p<.01 towards an interaction. Because only 10 subjects, we are cautious in interpreting significance. However, the Wald Z test for the interaction is marginally significant (Wald-z=-1.73,p=.0824), and the $\chi^2$ likelihood ratio test is significant $\chi^2$(1)=5.56, p=0.02. 
 
 ```{r,echo=FALSE,results='asis'}
 
-m0 <- glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe,family='binomial',data=Data)
+# m0 <- glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,family='binomial',data=Data)
+# 
+# m1 <-glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+DRD2,family='binomial',data=Data)
+# 
+# m2<-glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+DRD2+Log10_Household_Income,family='binomial',data=Data)
+# 
+# m3<-glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+DRD2*Log10_Household_Income,family='binomial',data=Data)
 
-m1 <-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+DRD2,family='binomial',data=Data)
+m0 <- glm(UseSubstance~Age,family='binomial',data=Data)
 
-m2<-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+DRD2+FDH_3_Household_IncomeLog,family='binomial',data=Data)
+m1 <-glm(UseSubstance~Age+DRD2,family='binomial',data=Data)
 
-m3<-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+DRD2*FDH_3_Household_IncomeLog,family='binomial',data=Data)
+m2<-glm(UseSubstance~Age+DRD2+Log10_Household_Income,family='binomial',data=Data)
 
+m3<-glm(UseSubstance~Age+DRD2*Log10_Household_Income,family='binomial',data=Data)
 
 
 
@@ -371,9 +418,37 @@ xtable(summary(m3))
 
 ```{r,echo=FALSE,results='asis'}
 xtable(anova(m3,test="Chisq"))
+
+
 ```
 
+However, it appeared to be related to age, those over 21, were significantly more likely to have the allele that hurts negative reinforcement learning. So we conducted a boostrapping p
+```{r}
 
+Data3 <- Data
+chisq.test(table(Data$Age>21,Data$DRD2),simulate.p.value = T)
+
+sum(Data$Age>21)
+ 
+Data3 %<>%
+  dplyr::arrange(desc(Age))
+
+# RandSampl <- function(Data3){
+# Data3$NewDRD2<- c(sample(c(replicate(4,0),replicate(16,1)),20),sample(c(replicate(6,0),replicate(125,1)),131))
+# m5 <- glm(UseSubstance~Age+NewDRD2*Log10_Household_Income,family='binomial',data=Data3)
+# return(anova(m5,test="Chisq")[5,5])
+# }
+
+# Z <- replicate(10000,RandSampl(Data3))
+# write.csv(Z, "z.csv")
+Z<- read.csv("z.csv")
+qplot(Z$x)
+eZ <- ecdf(Z$x)
+
+actual <- anova(m3,test="Chisq")[5,5]
+
+
+```
 
 
 \pagebreak
@@ -387,13 +462,13 @@ We also tested a full model including both genes together and
 
 
 ```{r,echo=FALSE,results='asis'}
-m0 <- glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe,family='binomial',data=Data)
+m0 <- glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry,family='binomial',data=Data)
 
-m1 <-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+COMT+DRD2,family='binomial',data=Data)
+m1 <-glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+COMT+DRD2,family='binomial',data=Data)
 
-m2 <- glm(UseSubstance~Age_At_PhenX_Completion + GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+COMT+DRD2+FDH_3_Household_IncomeLog,family='binomial',data=Data)
+m2 <- glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+COMT+DRD2+Log10_Household_Income,family='binomial',data=Data)
 
-m3 <- glm(UseSubstance~Age_At_PhenX_Completion + GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+COMT+DRD2 +COMT*FDH_3_Household_IncomeLog+ DRD2*FDH_3_Household_IncomeLog,family='binomial',data=Data)
+m3 <- glm(UseSubstance~Age+Africa_Ancestry+EastAsia_Ancestry+EastAsia_Ancestry+CentralAsia_Ancestry+Europe_Ancestry+COMT+DRD2 +COMT*Log10_Household_Income+ DRD2*Log10_Household_Income,family='binomial',data=Data)
 # 
 # # Data$COMT <-ifelse(Data$rs4680=="AA",2,NA)
 # # Data$COMT <-ifelse(Data$rs4680=="AG",1,Data$COMT)
@@ -410,9 +485,9 @@ xtable(anova(m3,test="Chisq"))
 
 
 ```{r,echo=FALSE}
-qplot(FDH_3_Household_IncomeLog,jitter(UseSubstance),geom=c("point","smooth"),method="lm",data=Data,facets=.~rs12364283)
+qplot(Log10_Household_Income,jitter(UseSubstance),geom=c("point","smooth"),method="lm",data=Data,facets=.~rs12364283)
 
-qplot(FDH_3_Household_IncomeLog,jitter(UseSubstance),geom=c("point","smooth"),method="lm",data=Data,facets=.~rs4680)
+qplot(Log10_Household_Income,jitter(UseSubstance),geom=c("point","smooth"),method="lm",data=Data,facets=.~rs4680)
 
 ```
 
