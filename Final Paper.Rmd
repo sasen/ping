@@ -177,7 +177,7 @@ Data2 <- data.frame(rbind(Druggies,Naives))%>%
   left_join(COMTData,by=c("SubjID")) 
 
 Data <-Data2 %>%
-  select(GAF_africa,GAF_eastAsia,GAF_oceania,GAF_centralAsia,GAF_europe,GAF_amerind, FDH_3_Household_Income,FDH_3_Household_IncomeLog,Gender,
+  select(GAF_africa,GAF_eastAsia,GAF_oceania,GAF_centralAsia,GAF_europe,GAF_amerind, FDH_3_Household_Income2,FDH_3_Household_IncomeLog,Gender,
          rs4680,rs12364283,rs1800497,
          PHX_PSS_TOTAL,
          PHX_IMP_TOTAL,
@@ -273,16 +273,20 @@ Previous studeis have found that the i
 
 
 
-m0 <- glm(UseSubstance~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe +Gender+log(Age_At_PhenX_Completion)+rs4680+r+rs12364283,
+m0 <- glm(UseSubstance~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe +Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283,family='binomial',data=Data)
+
+m1 <- glm(UseSubstance~Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283 +FDH_3_Household_IncomeLog,
             family='binomial',data=Data)
 
-m1 <- glm(UseSubstance~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283+FD,
-            family='binomial',data=Data)
+Data$COMT <-ifelse(Data$rs4680=="AA",2,NA)
+Data$COMT <-ifelse(Data$rs4680=="AG",1,Data$COMT)
+Data$COMT <-ifelse(Data$rs4680=="GG",0,Data$COMT)
 
-summary(m0)
+# m2 <- glm(COMT~Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283 +FDH_3_Household_IncomeLog,
+#             family='binomial',data=Data)
 
-anova(m0,m1,test="LRT")
 
+table(Data$rs4680,Data$UseSubstance)
 
 ```
 
