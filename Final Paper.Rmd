@@ -286,7 +286,8 @@ Data$COMT <-ifelse(Data$rs4680=="GG",0,Data$COMT)
 #             family='binomial',data=Data)
 
 
-table(Data$rs4680,Data$UseSubstance)
+# Data %>%
+#   group
 
 ```
 
