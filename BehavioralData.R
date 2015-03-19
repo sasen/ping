@@ -14,6 +14,7 @@ Data <- DAD2Data %>%
 
 #We are filtering out peopel w/ no scores
 
+
 Data %<>%
   filter( is.na(FDH_27_Ever_Diag_ADHD)==F,
           FDH_27_Ever_Diag_ADHD =="Yes"||FDH_27_Ever_Diag_ADHD =="No",
@@ -31,28 +32,17 @@ Data %<>%
          stimADHD =ifelse(FDH_28_Ever_Taken_Stim_Med=="Yes",1,0),
          SES = as.numeric(FDH_3_Household_Income))
 
-fish$attn = as.data.frame(Data$TBX_attention_score)
-fish$flank = Data$TBX_flanker_score
-fish = with(Data, TBX_attention_score,TBX_flanker_score)
-fish = na.omit(Data[,c(62:68,381,382)])
-
-PHX_IMP_TOTAL
-impul %<>%
-  filter( is.na(PHX_IMP_TOTAL)==F,
-          is.na(FDH_27_Ever_Diag_ADHD)==F,
-          FDH_27_Ever_Diag_ADHD =="Yes"||FDH_27_Ever_Diag_ADHD =="No",
-          is.na(FDH_3_Household_Income)==F          
-  )%>%
-  mutate(dADHD =ifelse(FDH_27_Ever_Diag_ADHD=="Yes",1,0),
-         SES = as.numeric(FDH_3_Household_Income))
+Data %<>%
+  filter(is.)
 
 
 #linear regressions with various behavioral data
 glm0 <- glm(dADHD~Gender+log(Age_At_NPExam),data=Data,family=binomial)
 glm1 <- glm(dADHD~Gender+log(Age_At_NPExam)+TBX_flanker_score+SES,data=Data,family=binomial)
 glm2 <- glm(dADHD~Gender+log(Age_At_NPExam)+TBX_flanker_score*SES,data=Data,family=binomial)
-glm3 <- glm(dADHD~Gender+log(Age_At_NPExam)*TBX_flanker_score*SES,data=Data,family=binomial)
+glm3 <- glm(dADHD~Gender+log(Age_At_NPExam)+TBX_flanker_score*SES,data=Data,family=binomial)
 
+summary(glm3)
 
 glm0 <- glm(dADHD~Gender+Age_At_NPExam,data=Data,family=binomial)
 glmr1 <- glm(dADHD~Gender+log(Age_At_NPExam)+TBX_reading_score+SES,data=Data,family=binomial)
@@ -62,17 +52,19 @@ glmr3 <- glm(dADHD~Gender+log(Age_At_NPExam)*TBX_reading_score*SES,data=Data,fam
 glma0 <- glm(dADHD~Gender+log(Age_At_NPExam),data=Data,family=binomial)
 glma1 <- glm(dADHD~log(Age_At_NPExam)+TBX_attention_score,data=Data,family=binomial)
 glma2 <- glm(dADHD~Gender+log(Age_At_NPExam)+TBX_attention_score*SES,data=Data,family=binomial)
-glma3 <- glm(dADHD~Gender+log(Age_At_NPExam)*TBX_attention_score*SES,data=Data,family=binomial)
+glma3 <- glm(dADHD~Gender+log(Age_At_NPExam)+TBX_attention_score*SES,data=Data,family=binomial)
 
-summary(glma1)
+summary(glma3)
 
-qplot(log(Age_At_NPExam),TBX_attention_score,group=dADHD,color=dADHD,geom=c("smooth","point"),size=dADHD)
+qplot(log(Age_At_NPExam),TBX_attention_score,group=dADHD,color=dADHD,geom=c("smooth","point"),size=dADHD,data=Data)
 
 
 anova(glma1,glma2,glma3,test="Chisq")
 
 
 
+
+qplot(Data$TBX_flanker_score+Data,Data$DTI_fiber_FA-L_pSCS )
 
 
 
