@@ -209,8 +209,7 @@ In this study we use a cognitive model proposed by @frank2007genetic that would 
 
 ##Role of Prefrontal Dopamine Density
 
-@frank2007genetic found there had been had an interesting mechanism 
-
+@frank2007genetic found a genetic triple dissocaition between SNPs that regulated different components of the dopaminergic system. Specifically, he found that the SNP that increased prefrontal dopamine, the MET allel of the prefrontal system, predicted increased prefrontal control over decision making behavior. A later paper by the same group of researchers [@doll2011dopaminergic] found that this same allele predicted the degree to which participants were likely to be influenced by explicit statements. Together this suggests that ther 
 
 
 Go vs Nogo. 
@@ -298,20 +297,15 @@ m0 <- glm(UseSubstance~Age_At_PhenX_Completion*Gender,family='binomial',data=Dat
 xtable(anova(m0,test="Chisq"))
 ```
 
-Gender appeared unrelated with the model fit
+t
+```{r}
 
-\begin{table}[ht]
-\centering
-\begin{tabular}{lrrrrr}
-  \hline
- & Df & Deviance & Resid. Df & Resid. Dev & Pr($>$Chi) \\ 
-  \hline
-NULL &  &  & 150 & 205.81 &  \\ 
-  Age & 1 & 19.94 & 149 & 185.88 & 0.0000 \\ 
-   \hline
-\end{tabular}
-\end{table}
-##Possible Confounders
+
+```
+
+##Full model
+
+As stated, we wanted to test whether these genetic variants appeared to have any effect on likelihood of using a substance. Unfortunately, given our limited power, we did not find the 
 
 ```{r}
 
@@ -320,15 +314,21 @@ NULL &  &  & 150 & 205.81 &  \\
 
 m0 <- glm(UseSubstance~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe +Gender+log(Age_At_PhenX_Completion),family='binomial',data=Data)
 
-m1 <- glm(UseSubstance~Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283 +FDH_3_Household_IncomeLog,
+m1 <- glm(UseSubstance~Age_At_PhenX_Completion+rs4680+rs12364283 +rs4680*FDH_3_Household_IncomeLog+ rs12364283*FDH_3_Household_IncomeLog,
             family='binomial',data=Data)
 
-Data$COMT <-ifelse(Data$rs4680=="AA",2,NA)
-Data$COMT <-ifelse(Data$rs4680=="AG",1,Data$COMT)
-Data$COMT <-ifelse(Data$rs4680=="GG",0,Data$COMT)
+# Data$COMT <-ifelse(Data$rs4680=="AA",2,NA)
+# Data$COMT <-ifelse(Data$rs4680=="AG",1,Data$COMT)
+# Data$COMT <-ifelse(Data$rs4680=="GG",0,Data$COMT)
 
 # m2 <- glm(COMT~Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283 +FDH_3_Household_IncomeLog,
 #             family='binomial',data=Data)
+
+summary(m1)
+
+anova(m1,test="Chisq")
+
+qplot(FDH_3_Household_IncomeLog,jitter(UseSubstance),geom=c("point","smooth"),method="lm",data=Data,facets=.~rs12364283)
 
 
 # Data %>%
@@ -342,19 +342,6 @@ Creating the genetic markers. Borrowing from Frank et al (2006), we set the Val1
 Ok, plan: describe
 
 SES factors:
-
-Ethnicity: measured objectively. 
-Race: measured with score
-Education: Highest parental education
-SES: Income
-
-
-SES Household income <5,00 to > 300,000. using 2,500 as lower category, ad 3,500 has higher one. Brought to log10 for simplicity: 
-
-So first, make a model of SES.We've taking the midpoint of these categories,
-
-
-Tests: makes 
 ```{r}
 
 plotIncomeCOMT <-Data %>%
