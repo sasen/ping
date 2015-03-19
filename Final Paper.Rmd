@@ -192,7 +192,7 @@ table(Data$UseSubstance)
 
 
 
-  
+# names(Data) <-c("Africa_Ancestry", "EastAsia_Ancestry", "Oceania_Ancestry","CentralAsia_Ancestry","Europe_Ancestry","American_Ancestry","Household_Income", "Log10_Household_Income","")
   
 
 library(gmodels)
@@ -326,7 +326,8 @@ In Figure 2, we see the
 
 ```
 
-We conducted a logistic regression, the beta weights and Wald-z values are reported blow. In the full model it appears that there there is a trend for a negative effect of COMT on likelihood of using a substance,and a positive interaction with income. The $\chi^2$ likeihood ratio test reveals that there is no main effect of COMT alone, but the interaction is trending towards significance. 
+We conducted a logistic regression, the beta weights and Wald-z values are reported blow. As is clear, nothing except age is signifcant at the $\alpha$=.5 level. There  appears that there there is a trend for a negative effect of COMT on likelihood of using a substance,and a positive interaction with income.
+
 ```{r,results='asis',echo=FALSE}
 
 m0 <- glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe,family='binomial',data=Data)
@@ -339,12 +340,17 @@ m3<-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceani
 
 
 xtable(summary(m3))
+```
+
+However, as the likelihood ratio test below makes clear, there is no main effect of the COMT polymorphism, and only trending evidence for the likelihod of an interaction. Therefore there may be suggestive evidence of an interaction, but any results here should be treated with caution. 
+
+```{r}
 xtable(anova(m3,test="Chisq"))
 ```
 
 ###DRD2
 
-We conducted a similar regression with DRD2, and found some suggestive evidence that there was a similar interaction. 
+We conducted a similar regression with DRD2. As you can see, the Wald-Z statistic is not significant, and should be interpreted with caution. 
 
 ```{r,echo=FALSE,results='asis'}
 
@@ -397,7 +403,7 @@ m3 <- glm(UseSubstance~Age_At_PhenX_Completion + GAF_africa+GAF_eastAsia+GAF_oce
 # #             family='binomial',data=Data)
 # 
 
-xtable(summary(m3))
+# xtable(summary(m3))
 xtable(anova(m3,test="Chisq"))
 
 ```
