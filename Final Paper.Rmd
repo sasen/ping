@@ -1,9 +1,13 @@
 ---
 title: "Final Paper"
+author: "Rob St. Louis and Sasen Cain, for the Pediatric Imaging, Neurocognition and Genetics Study*"
 output: pdf_document
 bibliography: bibliography.bib
 toc: true
 ---
+
+*Data used in preparation of this article were obtained from the Pediatric Imaging, Neurocognition and Genetics Study (PING) database (http://ping.chd.ucsd.edu). As such, the investigators within PING contributed to the design and implementation of PING and/or provided data but did not participate in analysis or writing of this report. A complete listing of PING investigators can be found at https://ping-dataportal.ucsd.edu/sharing/Authors10222012.pdf.
+
 
 ```{r,echo=FALSE,results='hide',message=FALSE}
 library(xtable)
@@ -230,6 +234,8 @@ COMT, they used the very common Val158Met polymorphism. COMT is an enzyme, and M
 
 #Methods
 
+Data used in the preparation of this article were obtained from the Pediatric Imaging, Neurocognition and Genetics (PING) Study database (http://ping.chd.ucsd.edu/). PING was launched in 2009 by the National Institute on Drug Abuse (NIDA) and the Eunice Kennedy Shriver National Institute Of Child Health & Human Development (NICHD) as a 2-year project of the American Recovery and Reinvestment Act. The primary goal of PING has been to create a data resource of highly standardized and carefully curated magnetic resonance imaging (MRI) data, comprehensive genotyping data, and developmental and neuropsychological assessments for a large cohort of developing children aged 3 to 20 years. The scientific aim of the project is, by openly sharing these data, to amplify the power and productivity of investigations of healthy and disordered development in children, and to increase understanding of the origins of variation in neurobehavioral phenotypes. For up-to-date information, see http://ping.chd.ucsd.edu/.
+
 Participants were recruited throuh PING, a nine site, cross-sectional study of roughly 14,000 children and adolencents from 3-20 years of age. Participants provided a saliva sample for whole genome sequencing, underwent three hours of neurocognitive testing and completed a one hour MRI session. Participants were subject to modest screening and those with a significant neurological disorder, or whose mother used alcohol or an illegal substance daily during pregnancy were screened.  Six of the nine sites participated in the additional testing, where children 14 and older were sent a web based interview based on PhenX questionniares that included questions about their tobacco, alcohol and illegal substance use. We do not have access to the geographcial location of the participants. PhenX is a site of validated measures, sponsored by NIH, designed to facilite cross-study comparisons(Hamilton et. al 2006)
 
 ###Single Nucleotide Polymorphisms
@@ -346,6 +352,11 @@ qplot(Data$rs12364283)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+#Acknowledgements
+
+Data collection and sharing for this project was funded by the Pediatric Imaging, Neurocognition and Genetics Study (PING) (National Institutes of Health Grant RC2DA029475). PING is funded by the National Institute on Drug Abuse and the Eunice Kennedy Shriver National Institute of Child Health & Human Development. PING data are disseminated by the PING Coordinating Center at the Center for Human Development, University of California, San Diego.
+
 #Bibliography
 
 Akshoomoff, N., Newman, E., Thompson, W. K., McCabe, C., Bloss, C. S., Chang, L., ... & Jernigan, T. L. (2014). The NIH Toolbox Cognition Battery: Results from a large normative developmental sample (PING). Neuropsychology, 28(1), 1.
