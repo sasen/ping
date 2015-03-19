@@ -10,8 +10,8 @@ library(xtable)
 library(ggplot2)
 library(dplyr)
 library(magrittr)
-library(gmodels)
-options(xtable.comment = FALSE)
+
+
 
 GeneticData <-read.csv("Data/DRD2andCOMTAlleles.csv",stringsAsFactors=FALSE)
 BehaveData <- read.csv("Data/PING_Behavior.csv",stringsAsFactors=FALSE)
@@ -195,8 +195,9 @@ table(Data$UseSubstance)
   
   
 
-
-
+library(gmodels)
+library(MASS)
+options(xtable.comment = FALSE)
 ```
 
 #Introduction
@@ -236,7 +237,7 @@ Data$COMT <- ifelse(Data$rs4680=="AG",0,Data$COMT)
 Data$COMT <- ifelse(Data$rs4680=="GG",-1,Data$COMT)
 
 Data$DRD2 <-ifelse(Data$rs12364283=="AA",1,NA)
-Data$DRD2 <-ifelse(Data$rs12364283=="GA",-1,Data$DRD2)
+Data$DRD2 <-ifelse(Data$rs12364283=="GA",0,Data$DRD2)
 
 # xtable(table(Data$rs4680))
 # # 
@@ -249,10 +250,18 @@ Data$DRD2 <-ifelse(Data$rs12364283=="GA",-1,Data$DRD2)
 ```
 
 
-To make sure this SNPs were not related to ethnic background, we includeded a measure of genetic ancestry for each participant. This was estimated by @akshoomoff2014nih, comparing PING participants to a large reference population. Each particpant was assigned a perentage ancestry to the six clusters which emerged from the data: Europe, Africa, East Asia, Oceania, Central Asia.
+To make sure this SNPs were not related to ethnic background, we includeded a measure of genetic ancestry for each participant. This was estimated by @akshoomoff2014nih, comparing PING participants to a large reference population. Each particpant was assigned a perentage ancestry to the six clusters which emerged from the data: Europe, Africa, East Asia, Oceania, Central Asia, American Indian To preven perfect colinearity we dropped the American Indian percentage. A Likelihood Ratio Test revealed that an that genetic ancessestry was boarderline significant effect of genetic ancestry on allelic type for the rs6480 SNP, $\chi^2$(5) =10.5, p = .06.  Similarly, at Likelihood Ratio Test revealed that there was a signifcant effect of ancestry on the rs12364283 allelic frequency $\chi^2$(5) =13, p = .02. Therefore, we will include genetic ancestry in our dataset, to control directly for the effect of genetic ancestry. 
 
-```{r}
+```{r,echo=FALSE}
 
+g1<- polr(as.factor(COMT)~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe,data=Data,method="logistic")
+g0 <-polr(as.factor(COMT)~1,data=Data,method="logistic")
+anova(g0,g1,test="Chisq")
+
+m1 <- (glm(DRD2~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe,data=Data,family="binomial"))
+m0 <- (glm(DRD2~1,data=Data,family="binomial"))
+
+anova(m0,m1,test="LRT")
 
 ```
 
@@ -267,7 +276,7 @@ Participants 14 and older at were provided with an online verions of the PhenX .
 
 
 
-###Possible Confounders
+###Age
 
 Because this is a cross sectional study, we expect that age at the time of survey was likely to have a very large effect on the the likihood of using a substance. This is both because participants would have had more time to try a drug, and because earlier studies have shown older teens are more likely to have tried alcohol and other substances [@grant1997age]. To get a sense of this relationship, we plotted the proportion of users at each age who had used a psycho-active substance. Figure 1 shows this relationship.
 
@@ -303,71 +312,101 @@ for(i in 1:9){
 qplot(AgeRound,p,data=PlotD) + geom_errorbar(aes(ymin=plow,ymax=phigh,width=0)) +ylab("Probability of Using Substance")+xlab("Age") +ggtitle("Effect of Age on the Probability of Using a Substance")
 ```
 
-We also tested whether percent geneti ancestry influenced the results. 
-```{r,echo=FALSE,results='hide'}
-
-
-
-```
-
-t
-```{r}
-
-
-```
 
 ##Full model
 
-As stated, we wanted to test whether these genetic variants appeared to have any effect on likelihood of using a substance. Unfortunately, given our limited power, we did not find the 
+We had three interacting hpothesis. The first is that the allelic variants that decreased COMT function and increased dopamine availablity in the prefrontal cortex would decrease the likelihood of using a substance. Second, that the allelic variants that increased DRD2 receptor density in the striatum would decrease the likelihood of using a substance. We put a greater focus on COMT as there was greater variablility in the genetic components. 
 
-```{r}
+###COMT
+
+In Figure 2, we see the 
+```{r,echo=FALSE,}
+# qplot(FDH_3_Household_IncomeLog,UseSubstance,geom=c("point","smooth"),method = "lm",data=Data,facets=.~rs4680)+ylab("Predicted probability of using a su")
+
+
+```
+
+We conducted a logistic regression, the beta weights and Wald-z values are reported blow. In the full model it appears that there there is a trend for a negative effect of COMT on likelihood of using a substance,and a positive interaction with income. The $\chi^2$ likeihood ratio test reveals that there is no main effect of COMT alone, but the interaction is trending towards significance. 
+```{r,results='asis',echo=FALSE}
+
+m0 <- glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe,family='binomial',data=Data)
+
+m1 <-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+COMT,family='binomial',data=Data)
+
+m2<-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+COMT+FDH_3_Household_IncomeLog,family='binomial',data=Data)
+
+m3<-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+COMT*FDH_3_Household_IncomeLog,family='binomial',data=Data)
+
+
+xtable(summary(m3))
+xtable(anova(m3,test="Chisq"))
+```
+
+###DRD2
+
+We conducted a similar regression with DRD2, and found some suggestive evidence that there was a similar interaction. 
+
+```{r,echo=FALSE,results='asis'}
+
+m0 <- glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe,family='binomial',data=Data)
+
+m1 <-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+DRD2,family='binomial',data=Data)
+
+m2<-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+DRD2+FDH_3_Household_IncomeLog,family='binomial',data=Data)
+
+m3<-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+DRD2*FDH_3_Household_IncomeLog,family='binomial',data=Data)
 
 
 
 
-m0 <- glm(UseSubstance~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe +Gender+log(Age_At_PhenX_Completion),family='binomial',data=Data)
 
-m1 <- glm(UseSubstance~Age_At_PhenX_Completion+rs4680+rs12364283 +rs4680*FDH_3_Household_IncomeLog+ rs12364283*FDH_3_Household_IncomeLog,
-            family='binomial',data=Data)
+xtable(summary(m3))
+```
 
-# Data$COMT <-ifelse(Data$rs4680=="AA",2,NA)
-# Data$COMT <-ifelse(Data$rs4680=="AG",1,Data$COMT)
-# Data$COMT <-ifelse(Data$rs4680=="GG",0,Data$COMT)
+```{r,echo=FALSE,results='asis'}
+xtable(anova(m3,test="Chisq"))
+```
 
-# m2 <- glm(COMT~Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283 +FDH_3_Household_IncomeLog,
-#             family='binomial',data=Data)
 
-summary(m1)
 
-anova(m1,test="Chisq")
 
+\pagebreak
+## Both SNPs together
+
+
+We also tested a full model including both genes together and 
+
+
+
+
+
+```{r,echo=FALSE,results='asis'}
+m0 <- glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe,family='binomial',data=Data)
+
+m1 <-glm(UseSubstance~Age_At_PhenX_Completion +GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+COMT+DRD2,family='binomial',data=Data)
+
+m2 <- glm(UseSubstance~Age_At_PhenX_Completion + GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+COMT+DRD2+FDH_3_Household_IncomeLog,family='binomial',data=Data)
+
+m3 <- glm(UseSubstance~Age_At_PhenX_Completion + GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+COMT+DRD2 +COMT*FDH_3_Household_IncomeLog+ DRD2*FDH_3_Household_IncomeLog,family='binomial',data=Data)
+# 
+# # Data$COMT <-ifelse(Data$rs4680=="AA",2,NA)
+# # Data$COMT <-ifelse(Data$rs4680=="AG",1,Data$COMT)
+# # Data$COMT <-ifelse(Data$rs4680=="GG",0,Data$COMT)
+# 
+# # m2 <- glm(COMT~Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283 +FDH_3_Household_IncomeLog,
+# #             family='binomial',data=Data)
+# 
+
+xtable(summary(m3))
+xtable(anova(m3,test="Chisq"))
+
+```
+
+
+```{r,echo=FALSE}
 qplot(FDH_3_Household_IncomeLog,jitter(UseSubstance),geom=c("point","smooth"),method="lm",data=Data,facets=.~rs12364283)
 
-
-# Data %>%
-#   group
-
-```
-
-
-Creating the genetic markers. Borrowing from Frank et al (2006), we set the Val158Met polymorphism. in the 
-
-Ok, plan: describe
-
-SES factors:
-```{r}
-
-plotIncomeCOMT <-Data %>%
-  filter(is.na(rs4680)==F,
-         is.na(FDH_3_Household_IncomeLog)==F)%>%
-  group_by(FDH_3_Household_IncomeLog)%>%
-  dplyr::summarize(propCOMTMET=mean(rs4680=="AA"),
-                   propCOMTVAL=mean(rs4680=="GG"),
-                   propCOMTVALMET =mean(rs4680=="AG"))
-
-qplot(data=plotIncomeCOMT, FDH_3_Household_IncomeLog,propCOMTVAL,geom="line",color="Val") +geom_line(data=plotIncomeCOMT, aes(FDH_3_Household_IncomeLog,propCOMTMET,color="MET"))+geom_line(data=plotIncomeCOMT, aes(FDH_3_Household_IncomeLog,propCOMTVALMET,color="VAL/MET")) 
-
-
+qplot(FDH_3_Household_IncomeLog,jitter(UseSubstance),geom=c("point","smooth"),method="lm",data=Data,facets=.~rs4680)
 
 ```
 
@@ -381,17 +420,9 @@ qplot(data=plotIncomeCOMT, FDH_3_Household_IncomeLog,propCOMTVAL,geom="line",col
 
 
 
-```
 
 
-You can also embed plots, for example:
 
-```{r, echo=FALSE}
-qplot(Data$rs12364283)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-#Bibliography
 
 
 
