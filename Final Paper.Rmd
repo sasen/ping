@@ -1,0 +1,352 @@
+---
+title: "Final Paper"
+output: pdf_document
+bibliography: bibliography.bib
+toc: true
+---
+
+```{r,echo=FALSE,results='hide',message=FALSE}
+library(xtable)
+library(ggplot2)
+library(dplyr)
+library(magrittr)
+
+GeneticData <-read.csv("Data/DRD2andCOMTAlleles.csv",stringsAsFactors=FALSE)
+BehaveData <- read.csv("Data/PING_Behavior.csv",stringsAsFactors=FALSE)
+COMTData <-read.csv("Data/COMT_RS4680.csv",stringsAsFactors=FALSE)
+
+Data <- BehaveData
+#Reordering household income
+Data$FDH_3_Household_Income2 <-ifelse(Data$FDH_3_Household_Income==1,5000,NA)
+Data$FDH_3_Household_Income2 <-ifelse(Data$FDH_3_Household_Income==2,7500,Data$FDH_3_Household_Income2)
+Data$FDH_3_Household_Income2 <-ifelse(Data$FDH_3_Household_Income==3,15000,Data$FDH_3_Household_Income2)
+Data$FDH_3_Household_Income2 <-ifelse(Data$FDH_3_Household_Income==4,25000,Data$FDH_3_Household_Income2)
+Data$FDH_3_Household_Income2 <-ifelse(Data$FDH_3_Household_Income==5,35000,Data$FDH_3_Household_Income2)
+Data$FDH_3_Household_Income2 <-ifelse(Data$FDH_3_Household_Income==6,45000,Data$FDH_3_Household_Income2)
+Data$FDH_3_Household_Income2 <-ifelse(Data$FDH_3_Household_Income==7,75000,Data$FDH_3_Household_Income2)
+Data$FDH_3_Household_Income2 <-ifelse(Data$FDH_3_Household_Income==8,125000,Data$FDH_3_Household_Income2)
+Data$FDH_3_Household_Income2 <-ifelse(Data$FDH_3_Household_Income==9,175000,Data$FDH_3_Household_Income2)
+Data$FDH_3_Household_Income2 <-ifelse(Data$FDH_3_Household_Income==10,225000,Data$FDH_3_Household_Income2)
+Data$FDH_3_Household_Income2 <-ifelse(Data$FDH_3_Household_Income==11,275000,Data$FDH_3_Household_Income2)
+Data$FDH_3_Household_Income2 <-ifelse(Data$FDH_3_Household_Income==12,300000,Data$FDH_3_Household_Income2)
+Data$FDH_3_Household_IncomeLog <-as.numeric(log10(Data$FDH_3_Household_Income2))
+BehaveData <- Data
+
+## OK, PHX_Alcohol_LifeUse_1==1 includes healthy drinking habits in college and parental guidance on how to drink wine with dinner. 
+## who gets drunk? let's use that as the substance abuse DV
+first_drunk = sapply(BehaveData$PHX_Alcohol_LifeAbuse_2, as.integer)
+first_drunk.tab = table(first_drunk)
+sum(first_drunk.tab) - first_drunk.tab["0"] ## OK, 69 kids got drunk
+## just make sure they started getting drunk AFTER they started drinking!
+init_drink = sapply(BehaveData$PHX_Alcohol_Initiation_1, as.integer)
+table(init_drink, first_drunk)
+confused_drinkers = subset(BehaveData, (first_drunk != 0) & (init_drink != 99) & (init_drink > first_drunk))  # you started drinking at age 20 and first got drunk at age 14??? REJECTED
+confusedID = confused_drinkers$SubjID
+
+
+BehaveData %<>% 
+  mutate(got_drunk =ifelse(PHX_Alcohol_LifeAbuse_2=="",0,
+                           ifelse(substr(PHX_Alcohol_LifeAbuse_2,1,1)==0,0,1)))
+## verify that nobody got put somewhere strange
+table(BehaveData$got_drunk,BehaveData$PHX_Alcohol_LifeAbuse_2)
+
+Druggies <- BehaveData %>%
+  filter(  got_drunk == 1             # we created            
+         | PHX_Tobacco_Status_1==1
+         | PHX_Substance_LifeUse_5==1  # marijuana
+         | PHX_Substance_Coc_1==1    # crack or cocaine
+         | PHX_Substance_Stims_1==1
+         | PHX_Substance_Meth_1==1
+         | PHX_Substance_Sedtv_1==1
+         | PHX_Substance_Tranq_1==1
+         | PHX_Substance_Painkiller_1==1
+         | PHX_Substance_Halluc_1==1
+         | PHX_Substance_Inhalnt_1==1
+         | PHX_Substance_Heroin_1==1
+) %>%
+  filter(Age_At_PhenX_Completion > 14 | Age > 14, # age protocol violation
+         SubjID != confusedID) ## that one confused drunk
+
+Naives <- BehaveData %>%
+  filter( got_drunk == 0, 
+           PHX_Tobacco_Status_1==2,
+           PHX_Substance_LifeUse_5==2,  # marijuana
+           PHX_Substance_Coc_1==2,    # crack or cocaine
+           PHX_Substance_Stims_1==2,
+           PHX_Substance_Meth_1==2,
+           PHX_Substance_Sedtv_1==2,
+           PHX_Substance_Tranq_1==2,
+           PHX_Substance_Painkiller_1==2,
+           PHX_Substance_Halluc_1==2,
+           PHX_Substance_Inhalnt_1==2,
+           PHX_Substance_Heroin_1==2  ) %>%
+  filter(Age_At_PhenX_Completion > 14 | Age > 14, # age protocol violation
+         SubjID != confusedID) ## that one confused drunk
+
+## this is just a quick check
+## how many people said "Don't know / Decline to state" on any question?
+Dunnos <- BehaveData %>%
+  filter( PHX_Tobacco_Status_1==99  ## don't know/won't state
+          | PHX_Substance_LifeUse_5==99)  # marijuana don't 
+dim(Dunnos)[1]  ## 8 people, OK, whatever
+          
+DruggieID <- Druggies %>%
+  select(  SubjID, 
+           Alcohol = got_drunk,
+           Tobacco = PHX_Tobacco_Status_1,
+           Marijuana = PHX_Substance_LifeUse_5,  # marijuana
+           Coca = PHX_Substance_Coc_1,
+           Stims = PHX_Substance_Stims_1,
+           Meth = PHX_Substance_Meth_1,
+           Sedtv = PHX_Substance_Sedtv_1,
+           Tranq = PHX_Substance_Tranq_1,
+           Paink = PHX_Substance_Painkiller_1,
+           Halluc = PHX_Substance_Halluc_1,
+           Inhal = PHX_Substance_Inhalnt_1,
+           Heroin = PHX_Substance_Heroin_1  )
+
+NaiveID <- Naives %>%
+  select(  SubjID, 
+           Alcohol = got_drunk,
+           Tobacco = PHX_Tobacco_Status_1,
+           Marijuana = PHX_Substance_LifeUse_5,  # marijuana
+           Coca = PHX_Substance_Coc_1,
+           Stims = PHX_Substance_Stims_1,
+           Meth = PHX_Substance_Meth_1,
+           Sedtv = PHX_Substance_Sedtv_1,
+           Tranq = PHX_Substance_Tranq_1,
+           Paink = PHX_Substance_Painkiller_1,
+           Halluc = PHX_Substance_Halluc_1,
+           Inhal = PHX_Substance_Inhalnt_1,
+           Heroin = PHX_Substance_Heroin_1  )
+
+
+intersect(Druggies,Naives)$SubjID  # should be zero
+intersect(Druggies,Dunnos)$SubjID  # 4 people
+intersect(Naives,Dunnos)$SubjID  # 0 people ... 
+## that means 4 Dunnos were otherwise naive, and said 99 on Tobacco/MJ
+
+# table(DruggieID$Tobacco,DruggieID$Alcohol) # 14 have smoked but never drink
+smokers = subset(DruggieID, Tobacco == 1)
+smokers = select(smokers, -Tobacco)
+filter(smokers, Alcohol==0,
+       Marijuana==2 | Marijuana==99,
+       Coca==2, Stims==2, Meth==2,Sedtv==2,Tranq==2,Paink==2,
+       Halluc==2, Inhal==2,Heroin==2)$SubjID  ### this is just 6 people
+
+
+
+########### HERE ARE THE QUESTIONS
+#----PHX_Alcohol_LifeAbuse_2,  --> became got_drunk (1=Ever, 0 =Never)
+#"How old were you the first time you got drunk, that is, your speech was slurred or you were unsteady on your feet?"
+#----PHX_Tobacco_Status_1,
+#"Have you ever smoked part or all of a cigarette? (1=Yes, 2=No, 99=Don't Know/Decline to state)"
+#----PHX_Substance_LifeUse_5,
+#"In your entire life, have you EVER tried marijuana (pot, weed, hash, bud, doobie, reefer, mary-jane, puff)? (1=Yes, 2=No, 99=Don't know/Decline to State)
+#----PHX_Substance_Coc_1,
+#"Have you EVER used cocaine or crack? (1=Yes, 2=No)"
+#----PHX_Substance_Stims_1,
+#"Have you EVER used stimulants, for example, Preludin, Benzedrine, Methedrine, Ritalin, uppers, or speed? (1=Yes, 2=No)"
+#----PHX_Substance_Meth_1,
+#"Have you EVER used meth-amphetamines (crystal meth, ice, batu, crank, tine, tweak, glass, junk)? (1=Yes, 2=No)"
+#----PHX_Substance_Sedtv_1,
+#"Have you EVER used sedatives, for example, sleeping pills, barbiturates, Seconal, Quaaludes, or Chloral Hydrate? (1=Yes, 2=No)"
+#----PHX_Substance_Tranq_1,
+#"Have you EVER used tranquilizers or anti-anxiety drugs, for example, Valium, Librium, muscle relaxants, or Zanax (1=Yes, 2=No)"
+#----PHX_Substance_Painkiller_1,
+#"Have you EVER used painkillers, for example, Codeine, Darvon, Percodan, OxyContin, Dilaudid, Demerol, Celebrex, or Vioxx? (1=Yes, 2=No)"
+#----PHX_Substance_Halluc_1,
+#"Have you EVER used hallucinogens, for example, Ecstasy/MDMA, GHB, Ketamine, LSD, mescaline, psilocybin, PCP, angel dust, or peyote? (1=Yes, 2=No)
+#----PHX_Substance_Inhalnt_1,
+#"Have you EVER used inhalants or solvents, for example, amyl nitrite, nitrous oxide, glue, toluene or gasoline? (1=Yes, 2=No)
+#----PHX_Substance_Heroin_1,
+#"Have you EVER used heroin? (1=Yes, 2=No)"
+
+
+#create the final dataset
+
+
+Druggies$UseSubstance <-1
+Naives$UseSubstance <-0
+
+
+
+
+Data2 <- data.frame(rbind(Druggies,Naives))%>%
+  left_join(GeneticData,by=c("SubjID")) %>%
+  left_join(COMTData,by=c("SubjID")) 
+
+Data <-Data2 %>%
+  select(GAF_africa,GAF_eastAsia,GAF_oceania,GAF_centralAsia,GAF_europe,GAF_amerind, FDH_3_Household_Income,FDH_3_Household_IncomeLog,Gender,
+         rs4680,rs12364283,rs1800497,
+         PHX_PSS_TOTAL,
+         PHX_IMP_TOTAL,
+         Age_At_PhenX_Completion,
+         UseSubstance
+         )%>%
+  na.omit()
+
+table(Data$UseSubstance)
+
+
+
+  
+  
+
+
+
+```
+
+#Introduction
+The high apparent hereditibility of substance abuse disorders [XXXX]has long suggested that vulnerability may be genetic. There have now been broad studies comparing adult substance abusers to healthy controls in the hopes of identifying the genetic components of one’s risk. By identifying the specific genes that predict those who are affected by substance abuse disorders, we might be able to identify the mechanism underying various components of individuals susceptibiltiy to the drug in question. 
+
+However, what is distinct about substance abuse is that it one must first use a psychoactive substance to become addicted to that substance. Those who struggle with substance abuse appear to have lower discount rates (cite) and are more risk seeking(cite) than the general population. Part of the genetic risk factors that may influence one’s likelihood of acquiring a debilitation dependence on a psychoactive subanstance may be those that influence the likelihood of trying or using the drug, despite the apparent adverse consequences.
+
+
+However, the risky and behavior and possible poor judgement of those who try dangerous substances clearly does not exist in a vacuum. Our social and economic environment will influence both the availability of psychoactive substances, the messages we learn about the substances, and the magnitude of the consequences for using those substances. In adults there is a robust association between SES status and substance abuse (cite). However, there is signifcant debate about whether this is true for adolescents [@hanson2007socioeconomic,@goodman2002socioeconomic]. This suggest that, SES might not play a major role in likelihood of using a substance. Another possibility, however, is that SES might only have a protective influence for those who are particularly vulnerable. 
+
+In this study we use a cognitive model proposed by @frank2007genetic that would let us identify the risk factors that might make it more likely that we could identify the underlying mechanism in this modelk
+
+##Role of Prefrontal Dopamine Density
+
+@frank2007genetic found there had been had an interesting mechanism 
+
+
+
+Go vs Nogo. 
+Phasic dopimine bursts modulate positive reinforcement learning through D1 receptors, D2 modulate avoidance learning through dopamine dips. Striatal system moderates slow learning, and prefrontal regions modulate short term learning, by maintaining reinforcement experiences in short term memory. This are stabilized by frontal DA levels, which then moderate decreasing levels. Seems to support, for instance, rapid trial by trial learning in rats. 
+
+Polymorphisms. 
+Results: 
+
+Checking the Racial and SES distribution of relevant
+
+
+C957T polymorphism in the DRD2 gene influences the D2 receptor density. Pretty consistent stuff from Frank on its importance to avoidance learning.  Also the rs12364283 SNP is highly predictive of negative learning, and is found in PING. there Seems to be some selective evidence it is predictive of alcoholism, but only in males, but the interaction with TaqlA (rs1800497) influences it’s effects (Sagwell). Both are included in PING and have been downloaded. van der Zwaluw found that TaqlA variant didn’t influence drinking directly but did influence relationship between coping mechanisms.   van der Zwaluw (2010 ) found this polymorphism interacted with parental strictness to predict alcohol use in dutch adolesence with adolecense having less strict parents being more likely to to be influenced by this polymorphism.
+
+
+COMT, they used the very common Val158Met polymorphism. COMT is an enzyme, and MET allel carriers have lower COMT activity and higher DA. In pop press there is a worrier( Met) vs warrier(val) distinction. worrier is more exploratory, lower pain threshold, high vulnerability to stress, but info processing under most conditions, warrior is opposite (23 and me blog. Lohoff et al 2008 have some evidence it is related to cocaine dependence. Heize & Smolka (2006) review some evidence for the distinction between these effects and various behavioral outcomes. However, these effect sizes look pretty modest. Next step might be to look for them. Schulz seems to find an effect where Met carriers were less flexible.  rs165774 seems to be highly predictive of alcohol useage, which is on the COMT gene, but is not the same Val158Met, so could be alternative test. (Voisey et al). 
+
+
+#Methods
+
+Participants were recruited throuh PING, a nine site, cross-sectional study of roughly 14,000 children and adolencents from 3-20 years of age. Participants provided a saliva sample for whole genome sequencing, underwent three hours of neurocognitive testing and completed a one hour MRI session. Participants were subject to modest screening and those with a significant neurological disorder, or whose mother used alcohol or an illegal substance daily during pregnancy were screened.  Six of the nine sites participated in the additional testing, where children 14 and older were sent a web based interview based on PhenX questionniares that included questions about their tobacco, alcohol and illegal substance use. We do not have access to the geographcial location of the participants. PhenX is a site of validated measures, sponsored by NIH, designed to facilite cross-study comparisons(Hamilton et. al 2006)
+
+###Single Nucleotide Polymorphisms
+Participants DNA was collected with a mouth swab and a whole genotype sequencing was performed using the Illumina Human660W-Quad BeadChip. Included in the 494,082 SNPs passing the PING quality control filters were the Val158Met polymorphism that influences the COMT gene (rs4680), and an SNP influence post-synaptic D2 density in the striatum (Frank & Hutchingson, 2011). 
+
+### Family Income
+Parents of participants were asked to indicate their family's total income in the past year.This was reported in a 12 point scale, with categories ranging from "<$5,000" to ">$300,000". To turn this data into a numeric veriable, we took the mean value for each category (i.e. "$20,000 to 29,999" was coded as 35,000). The endpoints were coded as the least extreme value(i.e. "20,000"), so that this coding scheme is a conservative estiamte of income variance. The income distribution in our data set can be found in Figure 1.
+```{r,fig.cap="Figure 1"}
+IncomeHist <- data.frame(t(table(Data$FDH_3_Household_Income2)))
+
+qplot(data=IncomeHist, Freq,Var2,size=40) + ylab("Total Annual Family Income ($)")+xlab("Frequency")
+
+```
+
+
+##Significant Substance Abuse. 
+Participants 14 and older at were provided with an online verions of the PhenX ... drug history questionnaire. This asked about their use of XXX drugs, including.... 
+
+To maximizet the power of the test and to minimize the possibility of multiple comparisons, we looked at the underlying mechanisms that were found to be influence. 
+
+
+
+
+###Possible Confounders
+
+To try to controll for the probability that the SNPs tested were not influenced by the racial backround of participants we included a measure of genetic ancestry, as calcuated by PING. This was estimated by Akshoomoff et al (2014), comparing PING participants to a large reference population. The six clusters include Europe, Africa, East Asia, Oceania, Central Asia.
+
+We also included age and gender.
+
+```{r}
+# cor(na.omit(Data[,c("GAF_europe", "GAF_africa","GAF_eastAsia","GAF_oceania","GAF_centralAsia") ]))
+```
+
+
+
+## Validating Measures.
+
+Previous studeis have found that the i
+
+```{r}
+
+
+
+m0 <- glm(UseSubstance~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe +Gender+log(Age_At_PhenX_Completion)+rs4680+r+rs12364283,
+            family='binomial',data=Data)
+
+m1 <- glm(UseSubstance~GAF_africa+GAF_eastAsia+GAF_oceania+GAF_centralAsia+GAF_europe+Gender+log(Age_At_PhenX_Completion)+rs4680+rs12364283+FD,
+            family='binomial',data=Data)
+
+summary(m0)
+
+anova(m0,m1,test="LRT")
+
+
+```
+
+
+Creating the genetic markers. Borrowing from Frank et al (2006), we set the Val158Met polymorphism. in the 
+
+Ok, plan: describe
+
+SES factors:
+
+Ethnicity: measured objectively. 
+Race: measured with score
+Education: Highest parental education
+SES: Income
+
+
+SES Household income <5,00 to > 300,000. using 2,500 as lower category, ad 3,500 has higher one. Brought to log10 for simplicity: 
+
+So first, make a model of SES.We've taking the midpoint of these categories,
+
+
+Tests: makes 
+```{r}
+
+plotIncomeCOMT <-Data %>%
+  filter(is.na(rs4680)==F,
+         is.na(FDH_3_Household_IncomeLog)==F)%>%
+  group_by(FDH_3_Household_IncomeLog)%>%
+  dplyr::summarize(propCOMTMET=mean(rs4680=="AA"),
+                   propCOMTVAL=mean(rs4680=="GG"),
+                   propCOMTVALMET =mean(rs4680=="AG"))
+
+qplot(data=plotIncomeCOMT, FDH_3_Household_IncomeLog,propCOMTVAL,geom="line",color="Val") +geom_line(data=plotIncomeCOMT, aes(FDH_3_Household_IncomeLog,propCOMTMET,color="MET"))+geom_line(data=plotIncomeCOMT, aes(FDH_3_Household_IncomeLog,propCOMTVALMET,color="VAL/MET")) 
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+```
+
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+qplot(Data$rs12364283)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+#Bibliography
+
+Akshoomoff, N., Newman, E., Thompson, W. K., McCabe, C., Bloss, C. S., Chang, L., ... & Jernigan, T. L. (2014). The NIH Toolbox Cognition Battery: Results from a large normative developmental sample (PING). Neuropsychology, 28(1), 1.
+
+Hamilton CM, Strader LC, Pratt JG, Maiese D, Hendershot T, Kwok RK,Hammond JA, Huggins W, Jackman D, Pan H, Nettles DS, Beaty TH, Farrer LA, Kraft P, Marazita ML, Ordovas JM, Pato CN, Spitz MR, Wagener D,Williams M, Junkins HA, Harlan WR, Ramos EM, Haines J: The PhenX toolkit:get the most from your measures. Am J Epidemiol 2011, 174:253–260
+[@frank2009genetic]
+
+#References
+
