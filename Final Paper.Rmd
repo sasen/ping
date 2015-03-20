@@ -368,10 +368,10 @@ anova(m0,m2,test="Chisq")
 
 ##Effect of Income and SNPs on Substance Use
 
-We had three interacting hypothesis. The first is that the allelic variants that decreased COMT function and increased dopamine availability in the prefrontal cortex would decrease the likelihood of using a substance. Second, that the allelic variants that increased DRD2 receptor density in the striatum would decrease the likelihood of using a substance. We put a greater focus on COMT as there was greater variability in the genetic components. Overall we found that 87 of the 51 participants had used a substance.  
+We had three interacting hypothesis. The first is that the allelic variants that decreased COMT function and increased dopamine availability in the prefrontal cortex would decrease the likelihood of using a substance. Second, that the allelic variants that increased DRD2 receptor density in the striatum would decrease the likelihood of using a substance. We put a greater focus on COMT as there was greater population variability in the allels. Overall we found that 87 of the 51 participants had used a substance.  
 
 
-
+\newpage
 ###COMT
 ```{r,echo=FALSE}
 # qplot(FDH_3_Household_IncomeLog,UseSubstance,geom=c("point","smooth"),method = "lm",data=Data,facets=.~rs4680)+ylab("Predicted probability of using a su")
@@ -380,7 +380,6 @@ We had three interacting hypothesis. The first is that the allelic variants that
 ```
 
 We conducted a logistic regression, the beta weights and Wald-z values are reported blow. As is clear, nothing except age is signifcant at the $\alpha$=.5 level. There is no evidence that the COMT polymorphism is related to substance use. 
-
 
 
 **Logistic Regression:Likelihood of using a substance**
@@ -406,8 +405,8 @@ m3<-glm(UseSubstance~Age+COMT*Log10_Household_Income,family='binomial',data=Data
 
 xtable(summary(m3))
 ```
-\newpage
-However, as the likelihood confirms the lack of a main effect or interaction. 
+
+The likelihood ratio test below confirms the lack of a main effect or interaction. 
 
 **Likelihood Ratio Test on the interaction between COMT and Income **
 ```{r,echo=FALSE,results='asis'}
